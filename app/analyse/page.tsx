@@ -274,15 +274,15 @@ function ScoreBar({ item, index }: { item: ScoreItem; index: number }) {
       transition={{ duration: 0.6, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
       className="group"
     >
-      <div className="flex items-center gap-3 mb-2">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
         <span
           className="text-sm font-medium text-taiga-text/80"
-          style={{ minWidth: '170px' }}
+          style={{ minWidth: 'clamp(100px, 30vw, 170px)' }}
         >
           {item.label}
         </span>
         <span
-          className="flex-1 text-xs font-semibold px-2 py-0.5 rounded-full text-center"
+          className="text-xs font-semibold px-2 py-0.5 rounded-full text-center"
           style={{
             color: item.color,
             backgroundColor: `${item.color}15`,
@@ -292,7 +292,7 @@ function ScoreBar({ item, index }: { item: ScoreItem; index: number }) {
           {item.verdict}
         </span>
         <span
-          className="font-heading text-lg font-bold tabular-nums"
+          className="font-heading text-lg font-bold tabular-nums ml-auto"
           style={{ color: item.color }}
         >
           {item.score}/{item.max}
@@ -450,13 +450,13 @@ function LivingCanvas() {
     };
     window.addEventListener('mousemove', onMove);
 
-    // Particles — subtle, photography-inspired (light leak aesthetic)
     const particles: Array<{
       x: number; y: number; vx: number; vy: number;
       size: number; hue: number; life: number;
     }> = [];
 
-    for (let i = 0; i < 120; i++) {
+    const particleCount = window.innerWidth < 768 ? 60 : 120;
+    for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
@@ -534,10 +534,17 @@ function LivingCanvas() {
 
     animId = requestAnimationFrame(draw);
 
+    const handleVisibility = () => {
+      if (document.hidden) cancelAnimationFrame(animId);
+      else animId = requestAnimationFrame(draw);
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMove);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 
@@ -563,8 +570,7 @@ function MagneticCursor() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Only show on non-touch devices
-    if ('ontouchstart' in window) return;
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
     const move = (e: MouseEvent) => {
       cursorX.set(e.clientX);
@@ -1505,7 +1511,7 @@ export default function AnalysePage() {
                       <span className="text-xs text-taiga-text/55 font-medium">{row.metric}</span>
                       <div className="flex gap-4">
                         {row.a.map((val, i) => (
-                          <span key={i} className="text-xs font-semibold w-16 text-center" style={{ color: 'rgba(248,113,113,0.75)' }}>
+                          <span key={i} className="text-xs font-semibold w-12 sm:w-16 text-center" style={{ color: 'rgba(248,113,113,0.75)' }}>
                             {val}
                           </span>
                         ))}
@@ -1514,9 +1520,9 @@ export default function AnalysePage() {
                   ))}
                 </div>
                 <div className="flex justify-end gap-4 mt-2">
-                  <span className="text-[10px] text-taiga-muted w-16 text-center">J1</span>
-                  <span className="text-[10px] text-taiga-muted w-16 text-center">J2</span>
-                  <span className="text-[10px] text-taiga-muted w-16 text-center">J3</span>
+                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J1</span>
+                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J2</span>
+                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J3</span>
                 </div>
               </motion.div>
 
@@ -1550,7 +1556,7 @@ export default function AnalysePage() {
                       <span className="text-xs text-taiga-text/55 font-medium">{row.metric}</span>
                       <div className="flex gap-4">
                         {row.b.map((val, i) => (
-                          <span key={i} className="text-xs font-semibold w-16 text-center" style={{ color: 'rgba(125,211,168,0.9)' }}>
+                          <span key={i} className="text-xs font-semibold w-12 sm:w-16 text-center" style={{ color: 'rgba(125,211,168,0.9)' }}>
                             {val}
                           </span>
                         ))}
@@ -1559,9 +1565,9 @@ export default function AnalysePage() {
                   ))}
                 </div>
                 <div className="flex justify-end gap-4 mt-2">
-                  <span className="text-[10px] text-taiga-muted w-16 text-center">J1</span>
-                  <span className="text-[10px] text-taiga-muted w-16 text-center">J2</span>
-                  <span className="text-[10px] text-taiga-muted w-16 text-center">J3</span>
+                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J1</span>
+                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J2</span>
+                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J3</span>
                 </div>
               </motion.div>
             </div>
