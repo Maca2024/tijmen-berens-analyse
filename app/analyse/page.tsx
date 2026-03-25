@@ -465,7 +465,7 @@ function ReasonCard({ reason }: { reason: ReasonItem }) {
   return (
     <motion.div
       variants={staggerItem}
-      className="glass glass-hover rounded-xl p-5 transition-all duration-300"
+      className="glass glass-hover glow-border rounded-xl p-5 transition-all duration-300"
     >
       <div className="flex gap-4">
         <div
@@ -505,7 +505,7 @@ function ImpactCard({
   return (
     <motion.div
       variants={staggerItem}
-      className="glass rounded-xl p-6 text-center"
+      className="glass tilt-card glow-border rounded-xl p-6 text-center"
     >
       <div
         className="text-3xl md:text-4xl font-bold mb-2 font-heading"
@@ -524,7 +524,7 @@ function SolutionCard({ solution, index }: { solution: SolutionItem; index: numb
   return (
     <motion.div
       variants={staggerItem}
-      className="glass glass-hover rounded-xl p-6 transition-all duration-300"
+      className="glass glass-hover glow-border rounded-xl p-6 transition-all duration-300"
       style={{
         borderColor: `${solution.color}20`,
       }}
@@ -1101,7 +1101,7 @@ export default function AnalysePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <motion.div
                 variants={staggerItem}
-                className="glass rounded-2xl p-8 text-center"
+                className="glass tilt-card glow-border rounded-2xl p-8 text-center"
               >
                 <div
                   className="font-heading font-light mb-3"
@@ -1119,7 +1119,7 @@ export default function AnalysePage() {
 
               <motion.div
                 variants={staggerItem}
-                className="glass rounded-2xl p-8 text-center"
+                className="glass tilt-card glow-border rounded-2xl p-8 text-center"
               >
                 <div
                   className="font-heading font-light mb-3"
@@ -1137,7 +1137,7 @@ export default function AnalysePage() {
 
               <motion.div
                 variants={staggerItem}
-                className="glass rounded-2xl p-8 text-center"
+                className="glass tilt-card glow-border rounded-2xl p-8 text-center"
               >
                 <div
                   className="font-heading font-light mb-3"
