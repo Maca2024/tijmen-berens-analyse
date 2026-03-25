@@ -51,6 +51,26 @@ const staggerItem: Variants = {
   },
 };
 
+/* Cinematic line-by-line reveal for the hero */
+const lineReveal: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 1, delay: 0.5 + i * 0.6, ease: [0.16, 1, 0.3, 1] },
+  }),
+};
+
+/* Slide in from left for score bars */
+const slideFromLeft: Variants = {
+  hidden: { opacity: 0, x: -60 },
+  visible: (i: number) => ({
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.7, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] },
+  }),
+};
+
 /* ──────────────────────────────────────────────
    SCORE DATA
    ────────────────────────────────────────────── */
@@ -90,61 +110,61 @@ const reasons: ReasonItem[] = [
     number: 1,
     title: 'robots.txt blokkeert ALLE AI crawlers',
     description:
-      'GPTBot, ClaudeBot, Google-Extended \u2014 allemaal geblokkeerd. Zijn werk is onzichtbaar voor ChatGPT, Perplexity en Google AI.',
+      'GPTBot, ClaudeBot, Google-Extended \u2014 allemaal geblokkeerd.',
   },
   {
     number: 2,
     title: 'Geen meta descriptions op subpagina\u2019s',
     description:
-      'Google genereert willekeurige snippets. Potenti\u00eble klanten zien geen overtuigende beschrijving in zoekresultaten.',
+      'Google genereert willekeurige snippets.',
   },
   {
     number: 3,
     title: 'Gebroken heading hi\u00ebrarchie',
     description:
-      'H4 headings zonder H1-H3. Zoekmachines begrijpen de pagina-structuur niet.',
+      'H4 headings zonder H1-H3.',
   },
   {
     number: 4,
     title: '~50 afbeeldingen zonder alt text',
     description:
-      'Voor een fotograaf catastrofaal. Google Images \u2014 de grootste bron van verkeer voor fotografen \u2014 kan zijn werk niet indexeren.',
+      'Google Images kan zijn werk niet indexeren.',
   },
   {
     number: 5,
     title: 'Events-portfolio geeft een 404 error',
     description:
-      'Een heel portfolio-onderdeel is stuk. Potenti\u00eble event-opdrachtgevers zien een foutpagina.',
+      'Een heel portfolio-onderdeel is stuk.',
   },
   {
     number: 6,
     title: 'Geen blog = geen SEO-verkeer',
     description:
-      '9 pagina\u2019s met ~300 woorden totaal. Concurrenten met blogs ranken op \u2018eventfotograaf Arnhem\u2019 \u2014 Tijmen niet.',
+      '9 pagina\u2019s met ~300 woorden totaal.',
   },
   {
     number: 7,
     title: 'NatGeo-win verstopt als bulletpoint',
     description:
-      'Zijn sterkste credential staat als kleine tekst op de about-pagina. Dit zou hero-content moeten zijn.',
+      'Zijn sterkste credential staat als kleine tekst op de about-pagina.',
   },
   {
     number: 8,
     title: 'Geen services-pagina',
     description:
-      'Wat kost een shoot? Welke pakketten bied je aan? Potenti\u00eble klanten moeten raden.',
+      'Potenti\u00eble klanten moeten raden.',
   },
   {
     number: 9,
     title: 'Geen testimonials of social proof',
     description:
-      'Nul reviews, nul client logos, nul aanbevelingen zichtbaar. Ondanks Trouw en NatGeo.',
+      'Nul reviews, nul client logos, nul aanbevelingen zichtbaar.',
   },
   {
     number: 10,
     title: 'Instagram outrankt zijn eigen website',
     description:
-      'Zoek \u2018Tijmen Berens\u2019 op Google: Instagram staat boven zijn site. Hij bezit zijn eigen merk niet online.',
+      'Hij bezit zijn eigen merk niet online.',
   },
 ];
 
@@ -162,25 +182,25 @@ const solutions: SolutionItem[] = [
   {
     title: 'Website Revolution',
     description:
-      'Van Squarespace naar Next.js/Vercel. Edge deployment, <1s laadtijd, GSAP animaties, WebGL signature moment. Van template naar Awwwards-niveau.',
+      'Van Squarespace naar Next.js. Edge deployment, <1s laadtijd, Awwwards-niveau.',
     color: '#7dd3a8',
   },
   {
     title: 'SEO & GEO Explosie',
     description:
-      'AI crawlers deblokkeren, structured data, llms.txt, Google Business Profiel, image sitemap. Van 27/100 naar 90+ SEO score.',
+      'AI crawlers deblokkeren, structured data, Google Business. Van 27 naar 90+ SEO score.',
     color: '#38bdf8',
   },
   {
     title: 'Content Machine',
     description:
-      '4 service-pagina\u2019s, 8 project case studies, 12 blog artikelen, awards showcase. Van 9 naar 50+ pagina\u2019s in 90 dagen.',
+      '4 service-pagina\u2019s, 8 case studies, 12 blogs. Van 9 naar 50+ pagina\u2019s in 90 dagen.',
     color: '#a78bfa',
   },
   {
     title: 'Brand & Conversie',
     description:
-      'Scherpe positionering, NatGeo badge op homepage, testimonials, booking CTA\u2019s, newsletter. Van museum naar bedrijf.',
+      'NatGeo badge op homepage, testimonials, booking CTA\u2019s. Van museum naar bedrijf.',
     color: '#f59e0b',
   },
 ];
@@ -269,20 +289,22 @@ function ScoreBar({ item, index }: { item: ScoreItem; index: number }) {
       aria-valuemin={0}
       aria-valuemax={item.max}
       aria-valuetext={`${item.score} van ${item.max}, ${item.verdict}`}
-      initial={{ opacity: 0, x: -24 }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+      custom={index}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-30px' }}
+      variants={slideFromLeft}
       className="group"
     >
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+      <div className="flex items-center gap-3 mb-2">
         <span
           className="text-sm font-medium text-taiga-text/80"
-          style={{ minWidth: 'clamp(100px, 30vw, 170px)' }}
+          style={{ minWidth: '170px' }}
         >
           {item.label}
         </span>
         <span
-          className="text-xs font-semibold px-2 py-0.5 rounded-full text-center"
+          className="flex-1 text-xs font-semibold px-2 py-0.5 rounded-full text-center"
           style={{
             color: item.color,
             backgroundColor: `${item.color}15`,
@@ -292,7 +314,7 @@ function ScoreBar({ item, index }: { item: ScoreItem; index: number }) {
           {item.verdict}
         </span>
         <span
-          className="font-heading text-lg font-bold tabular-nums ml-auto"
+          className="font-heading text-lg font-bold tabular-nums"
           style={{ color: item.color }}
         >
           {item.score}/{item.max}
@@ -342,7 +364,7 @@ function CountUp({
 
   return (
     <span ref={ref} className="tabular-nums">
-      {display}
+      {display.toLocaleString('nl-NL')}
       {suffix}
     </span>
   );
@@ -366,7 +388,6 @@ function DotGrid({
 
   return (
     <div ref={ref} className="flex flex-col items-center gap-6">
-      {/* Dot grid */}
       <div
         className="flex flex-wrap gap-[3px] justify-center"
         style={{ maxWidth: '440px' }}
@@ -400,7 +421,6 @@ function DotGrid({
         })}
       </div>
 
-      {/* Legend */}
       <div className="flex items-center gap-6 text-sm">
         <div className="flex items-center gap-2">
           <span style={{ color: '#7dd3a8', fontSize: '16px' }}>&#9679;</span>
@@ -455,15 +475,14 @@ function LivingCanvas() {
       size: number; hue: number; life: number;
     }> = [];
 
-    const particleCount = window.innerWidth < 768 ? 60 : 120;
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < 120; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.5,
         size: Math.random() * 2 + 0.5,
-        hue: Math.random() * 40 + 140, // green-teal range (brand)
+        hue: Math.random() * 40 + 140,
         life: Math.random(),
       });
     }
@@ -481,14 +500,12 @@ function LivingCanvas() {
         const dy = my - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        // Gentle mouse attraction
         if (dist < 250) {
           const force = (250 - dist) / 250 * 0.008;
           p.vx += dx * force;
           p.vy += dy * force;
         }
 
-        // Organic drift (Perlin-like)
         p.vx += Math.sin(time * 0.0005 + p.y * 0.005) * 0.003;
         p.vy += Math.cos(time * 0.0005 + p.x * 0.005) * 0.003;
 
@@ -497,13 +514,11 @@ function LivingCanvas() {
         p.x += p.vx;
         p.y += p.vy;
 
-        // Wrap
         if (p.x < -10) p.x = canvas.width + 10;
         if (p.x > canvas.width + 10) p.x = -10;
         if (p.y < -10) p.y = canvas.height + 10;
         if (p.y > canvas.height + 10) p.y = -10;
 
-        // Breathing alpha
         p.life += 0.002;
         const alpha = (Math.sin(p.life * Math.PI * 2) * 0.3 + 0.4) * (dist < 250 ? 0.7 : 0.25);
 
@@ -512,7 +527,6 @@ function LivingCanvas() {
         ctx.fillStyle = `hsla(${p.hue + mouseRef.current.x * 30}, 60%, 55%, ${alpha})`;
         ctx.fill();
 
-        // Connection lines near mouse (O(n²) — indexed, no indexOf)
         if (dist < 180) {
           for (let j = i + 1; j < particles.length; j++) {
             const q = particles[j];
@@ -534,17 +548,10 @@ function LivingCanvas() {
 
     animId = requestAnimationFrame(draw);
 
-    const handleVisibility = () => {
-      if (document.hidden) cancelAnimationFrame(animId);
-      else animId = requestAnimationFrame(draw);
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMove);
-      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 
@@ -570,7 +577,7 @@ function MagneticCursor() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if ('ontouchstart' in window) return;
 
     const move = (e: MouseEvent) => {
       cursorX.set(e.clientX);
@@ -625,49 +632,24 @@ function MagneticCursor() {
 }
 
 /* ══════════════════════════════════════════════
-   MAIN PAGE
+   MAIN PAGE — THE EXPOSURE
    ══════════════════════════════════════════════ */
 
 export default function AnalysePage() {
   const avg = Math.round((scores.reduce((s, i) => s + i.score, 0) / scores.length) * 10) / 10;
   const pct = Math.round((avg / 10) * 100);
 
-  /* ── Reason clusters ─────────────────────── */
   const clusterTech = reasons.slice(0, 5);
   const clusterContent = reasons.slice(5, 8);
   const clusterConversie = reasons.slice(8, 10);
 
-  const clusterMeta = [
-    {
-      id: 'tech',
-      label: 'Technische Fouten',
-      labelColor: '#f87171',
-      bg: 'rgba(248,113,113,0.06)',
-      border: 'rgba(248,113,113,0.2)',
-      items: clusterTech,
-    },
-    {
-      id: 'content',
-      label: 'Content & Strategie',
-      labelColor: '#a78bfa',
-      bg: 'rgba(167,139,250,0.06)',
-      border: 'rgba(167,139,250,0.2)',
-      items: clusterContent,
-    },
-    {
-      id: 'conversie',
-      label: 'Conversie & Merk',
-      labelColor: '#f59e0b',
-      bg: 'rgba(245,158,11,0.06)',
-      border: 'rgba(245,158,11,0.2)',
-      items: clusterConversie,
-    },
-  ];
+  /* Use projection data for the split-screen future section */
+  const scenarioA = projectionData;
+  const metricsCount = compareData.length;
 
   return (
     <LazyMotion features={domAnimation} strict>
     <main className="relative" id="main-content">
-      {/* ── Nano Bannana: Living Canvas + Magnetic Cursor ── */}
       <LivingCanvas />
       <MagneticCursor />
 
@@ -702,111 +684,103 @@ export default function AnalysePage() {
         />
       </div>
 
-      {/* =============================================
-          SECTION 1 — HERO (cinematic full-screen)
-          ============================================= */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 py-24">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-          className="text-center max-w-5xl mx-auto"
-        >
-          <motion.div
-            variants={fadeIn}
-            className="text-xs font-semibold uppercase mb-6"
-            style={{ letterSpacing: '0.35em', color: '#7dd3a8' }}
-          >
-            Vertrouwelijk Rapport
-          </motion.div>
-
+      {/* ==============================================
+          MOMENT 1 — THE OPENING
+          ============================================== */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-6">
+        <div className="text-center max-w-5xl mx-auto">
           <motion.h1
-            variants={fadeUp}
-            className="font-heading font-bold mb-6 text-gradient-aurora"
-            style={{ fontSize: 'clamp(3.5rem, 10vw, 8rem)', letterSpacing: '0.03em', lineHeight: 1 }}
+            custom={0}
+            initial="hidden"
+            animate="visible"
+            variants={lineReveal}
+            className="font-heading font-bold"
+            style={{
+              fontSize: 'clamp(4rem, 12vw, 10rem)',
+              lineHeight: 0.9,
+              color: '#e8f0ec',
+              letterSpacing: '-0.02em',
+            }}
           >
-            DIGITALE ANALYSE
+            Tijmen Berens
           </motion.h1>
 
-          <motion.div
-            variants={fadeUp}
-            className="font-heading font-light text-xl md:text-3xl mb-3"
-            style={{ color: '#e8f0ec', lineHeight: '0.92' }}
-          >
-            Tijmen Berens Photography
-          </motion.div>
-
           <motion.p
-            variants={fadeIn}
-            className="text-sm mt-4 mb-10"
-            style={{ color: '#4a6358' }}
+            custom={1}
+            initial="hidden"
+            animate="visible"
+            variants={lineReveal}
+            className="font-heading font-light mt-6"
+            style={{
+              fontSize: 'clamp(1.2rem, 3vw, 2rem)',
+              color: '#7dd3a8',
+              letterSpacing: '0.05em',
+            }}
           >
-            AetherLink B.V. &middot; Maart 2026
+            National Geographic Winnaar
           </motion.p>
 
-          {/* Dramatic score panel — two towers */}
-          <motion.div
-            variants={fadeUp}
-            className="glass rounded-2xl px-8 py-8 inline-block mb-10"
+          <motion.p
+            custom={2}
+            initial="hidden"
+            animate="visible"
+            variants={lineReveal}
+            className="font-heading font-light"
+            style={{
+              fontSize: 'clamp(1.2rem, 3vw, 2rem)',
+              color: '#f87171',
+              letterSpacing: '0.05em',
+            }}
           >
-            <div className="flex flex-col sm:flex-row items-center gap-8 sm:gap-16">
-              {/* Vakmanschap */}
-              <div className="text-center">
-                <div className="text-xs uppercase tracking-[0.25em] mb-3" style={{ color: '#4a6358' }}>
-                  Vakmanschap
-                </div>
-                <div
-                  className="font-heading font-bold leading-none"
-                  style={{ fontSize: 'clamp(4rem, 10vw, 6rem)', color: '#7dd3a8' }}
-                >
-                  9<span className="text-2xl" style={{ color: '#4a6358' }}>/10</span>
-                </div>
-                <div className="text-xs mt-2" style={{ color: '#7dd3a8' }}>Wereldklasse fotografie</div>
-              </div>
+            Onzichtbaar op Google.
+          </motion.p>
 
-              {/* VS divider */}
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-px h-12 sm:w-12 sm:h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
-                <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.12)', letterSpacing: '0.2em' }}>
-                  VS
-                </span>
-                <div className="w-px h-12 sm:w-12 sm:h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          {/* The two towers: 9 vs 1.7 */}
+          <motion.div
+            custom={3}
+            initial="hidden"
+            animate="visible"
+            variants={lineReveal}
+            className="mt-20 flex items-end justify-center gap-12 sm:gap-24"
+          >
+            <div className="text-center">
+              <div
+                className="font-heading font-bold leading-none"
+                style={{ fontSize: 'clamp(6rem, 18vw, 13rem)', color: '#7dd3a8' }}
+              >
+                9
               </div>
+              <div
+                className="text-xs uppercase tracking-[0.3em] mt-2"
+                style={{ color: 'rgba(125,211,168,0.6)' }}
+              >
+                vakmanschap
+              </div>
+            </div>
 
-              {/* Digitaal */}
-              <div className="text-center">
-                <div className="text-xs uppercase tracking-[0.25em] mb-3" style={{ color: '#4a6358' }}>
-                  Digitaal
-                </div>
-                <div
-                  className="font-heading font-bold leading-none"
-                  style={{ fontSize: 'clamp(4rem, 10vw, 6rem)', color: '#f87171' }}
-                >
-                  1.7<span className="text-2xl" style={{ color: '#4a6358' }}>/10</span>
-                </div>
-                <div className="text-xs mt-2" style={{ color: '#f87171' }}>Nagenoeg onzichtbaar</div>
+            <div className="text-center">
+              <div
+                className="font-heading font-bold leading-none"
+                style={{ fontSize: 'clamp(6rem, 18vw, 13rem)', color: '#f87171' }}
+              >
+                1.7
+              </div>
+              <div
+                className="text-xs uppercase tracking-[0.3em] mt-2"
+                style={{ color: 'rgba(248,113,113,0.6)' }}
+              >
+                digitaal
               </div>
             </div>
           </motion.div>
 
-          {/* Three credential pills */}
           <motion.div
-            variants={fadeIn}
-            className="flex flex-wrap items-center justify-center gap-3 mb-14"
+            custom={4}
+            initial="hidden"
+            animate="visible"
+            variants={lineReveal}
+            className="mt-20 flex justify-center"
           >
-            {['National Geographic Winner NL 2022', 'Documentaire & Event Fotograaf', 'Arnhem, Nederland'].map((pill) => (
-              <div
-                key={pill}
-                className="glass rounded-full px-4 py-1.5 text-xs font-medium"
-                style={{ color: 'rgba(232,240,236,0.5)' }}
-              >
-                {pill}
-              </div>
-            ))}
-          </motion.div>
-
-          {/* SVG scroll arrow */}
-          <motion.div variants={fadeIn} className="flex justify-center">
             <svg
               className="animate-scroll-down"
               width="24" height="40" viewBox="0 0 24 40"
@@ -818,331 +792,181 @@ export default function AnalysePage() {
               <path d="M8 28l4 4 4-4" stroke="rgba(74,99,88,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </motion.div>
-        </motion.div>
-      </section>
-
-      <div className="section-divider mx-auto w-2/3" />
-
-      {/* =============================================
-          SECTION 2 — THE VERDICT (one powerful statement)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-            variants={staggerContainer}
-          >
-            {/* The dramatic statement */}
-            <motion.div variants={fadeUp} className="text-center mb-14">
-              <h2
-                className="font-heading font-bold leading-tight"
-                style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}
-              >
-                <span style={{ color: '#7dd3a8' }}>National Geographic winnaar.</span>
-                <br />
-                <span style={{ color: '#f87171' }}>Onzichtbaar op Google.</span>
-              </h2>
-            </motion.div>
-
-            {/* Glass card with average + potential bar */}
-            <motion.div variants={fadeUp} className="glass rounded-2xl p-7 md:p-10 text-center max-w-xl mx-auto">
-              <div className="text-xs uppercase tracking-[0.25em] mb-4" style={{ color: '#4a6358' }}>
-                Digitale Totaalscore
-              </div>
-              <div className="font-heading font-bold mb-4" style={{ fontSize: 'clamp(3rem, 7vw, 4.5rem)', color: '#f87171' }}>
-                {avg}<span className="text-xl" style={{ color: '#4a6358' }}>/10</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-white/5 overflow-hidden mb-3">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: `${pct}%` }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-                  className="h-full rounded-full"
-                  style={{
-                    background: 'linear-gradient(90deg, #f87171, #f59e0b)',
-                    boxShadow: '0 0 20px rgba(248,113,113,0.3)',
-                  }}
-                />
-              </div>
-              <p className="text-sm" style={{ color: '#4a6358' }}>
-                <span className="font-semibold" style={{ color: '#f87171' }}>{pct}%</span> van het potentieel benut
-              </p>
-            </motion.div>
-          </motion.div>
         </div>
       </section>
 
       <div className="section-divider mx-auto w-2/3" />
 
-      {/* =============================================
-          SECTION 3 — SCORECARD (inside ONE glass container)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
+      {/* ==============================================
+          MOMENT 2 — THE SCORE
+          ============================================== */}
+      <section className="py-28 md:py-40 px-6">
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-60px' }}
-            variants={staggerContainer}
+            variants={fadeUp}
           >
-            {/* Section header inline */}
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <p className="font-heading tracking-[0.25em] uppercase text-sm mb-3 font-semibold" style={{ color: '#7dd3a8' }}>
-                Scorekaart
-              </p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold" style={{ color: '#e8f0ec' }}>
-                Negen Dimensies
-              </h2>
-              <p className="mt-3 text-base md:text-lg" style={{ color: '#4a6358' }}>
-                Het pijnlijke contrast tussen talent en digitale zichtbaarheid.
-              </p>
-            </motion.div>
-
-            {/* ONE glass container wrapping ALL score bars */}
-            <div className="glass rounded-2xl p-7 md:p-10">
-              <div className="space-y-5">
-                {scores.map((item, i) => (
-                  <ScoreBar key={item.label} item={item} index={i} />
-                ))}
-              </div>
-
-              <div className="section-divider mt-8" />
-
-              <div className="mt-6 flex items-center justify-between">
-                <span className="text-sm font-semibold text-taiga-text/50 uppercase tracking-wider">
-                  Gemiddeld
-                </span>
-                <div className="flex items-center gap-3">
-                  <span className="font-heading text-3xl font-bold" style={{ color: '#f87171' }}>
-                    {avg}/10
-                  </span>
-                  <span
-                    className="text-sm font-semibold px-3 py-1 rounded-full"
-                    style={{
-                      color: '#f87171',
-                      backgroundColor: 'rgba(248,113,113,0.12)',
-                      border: '1px solid rgba(248,113,113,0.25)',
-                    }}
-                  >
-                    {pct}%
-                  </span>
-                </div>
-              </div>
-            </div>
+            <p
+              className="font-heading tracking-[0.3em] uppercase text-sm mb-16 font-semibold"
+              style={{ color: '#7dd3a8' }}
+            >
+              Scorekaart
+            </p>
           </motion.div>
-        </div>
-      </section>
 
-      <div className="section-divider mx-auto w-2/3" />
-
-      {/* =============================================
-          SECTION 4 — THREE NUMBERS (dramatic stacked)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-            variants={staggerContainer}
-          >
-            {/* Section header inline */}
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <p className="font-heading tracking-[0.25em] uppercase text-sm mb-3 font-semibold" style={{ color: '#38bdf8' }}>
-                Realiteit
-              </p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold" style={{ color: '#e8f0ec' }}>
-                Drie Cijfers
-              </h2>
-              <p className="mt-3 text-base md:text-lg" style={{ color: '#4a6358' }}>
-                Die het hele verhaal vertellen.
-              </p>
-            </motion.div>
-
+          <div className="glass rounded-2xl p-7 md:p-10">
             <div className="space-y-5">
-              {/* Awards — green */}
-              <motion.div
-                variants={staggerItem}
-                className="glass rounded-2xl p-8 md:p-10 relative overflow-hidden"
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse at 90% 30%, rgba(125,211,168,0.1) 0%, transparent 60%)',
-                  }}
-                />
-                <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-8 relative">
-                  <div
-                    className="font-heading font-bold leading-none"
-                    style={{ fontSize: 'clamp(5rem, 12vw, 8rem)', color: '#7dd3a8' }}
-                  >
-                    <CountUp target={5} />
-                  </div>
-                  <div className="text-center md:text-left pb-2">
-                    <div className="text-lg font-semibold mb-1" style={{ color: 'rgba(232,240,236,0.8)' }}>
-                      Awards &amp; Erkenningen
-                    </div>
-                    <div className="text-sm" style={{ color: 'rgba(232,240,236,0.35)' }}>
-                      NatGeo, Fotomuseum, 2&times; Life Framer, Trouw
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Pages — amber */}
-              <motion.div
-                variants={staggerItem}
-                className="glass rounded-2xl p-8 md:p-10 relative overflow-hidden"
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse at 90% 30%, rgba(245,158,11,0.1) 0%, transparent 60%)',
-                  }}
-                />
-                <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-8 relative">
-                  <div
-                    className="font-heading font-bold leading-none"
-                    style={{ fontSize: 'clamp(5rem, 12vw, 8rem)', color: '#f59e0b' }}
-                  >
-                    <CountUp target={9} />
-                  </div>
-                  <div className="text-center md:text-left pb-2">
-                    <div className="text-lg font-semibold mb-1" style={{ color: 'rgba(232,240,236,0.8)' }}>
-                      Pagina&rsquo;s op zijn website
-                    </div>
-                    <div className="text-sm" style={{ color: 'rgba(232,240,236,0.35)' }}>
-                      Zou 50+ moeten zijn voor een fotograaf van dit niveau
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Blog — red */}
-              <motion.div
-                variants={staggerItem}
-                className="glass rounded-2xl p-8 md:p-10 relative overflow-hidden"
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse at 90% 30%, rgba(248,113,113,0.1) 0%, transparent 60%)',
-                  }}
-                />
-                <div className="flex flex-col md:flex-row items-center md:items-end gap-4 md:gap-8 relative">
-                  <div
-                    className="font-heading font-bold leading-none"
-                    style={{ fontSize: 'clamp(5rem, 12vw, 8rem)', color: '#f87171' }}
-                  >
-                    <CountUp target={0} />
-                  </div>
-                  <div className="text-center md:text-left pb-2">
-                    <div className="text-lg font-semibold mb-1" style={{ color: 'rgba(232,240,236,0.8)' }}>
-                      Blog artikelen
-                    </div>
-                    <div className="text-sm" style={{ color: 'rgba(232,240,236,0.35)' }}>
-                      Nul SEO-verkeer. Nul zoekresultaten. Nul kansen.
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <div className="section-divider mx-auto w-2/3" />
-
-      {/* =============================================
-          SECTION 5 — DIAGNOSE (3 clustered groups)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-            variants={staggerContainer}
-          >
-            {/* Section header inline */}
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <p className="font-heading tracking-[0.25em] uppercase text-sm mb-3 font-semibold" style={{ color: '#f87171' }}>
-                Forensische Diagnose
-              </p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold" style={{ color: '#e8f0ec' }}>
-                10 Redenen van Onzichtbaarheid
-              </h2>
-              <p className="mt-3 text-base md:text-lg" style={{ color: '#4a6358' }}>
-                Gegroepeerd naar type fout &mdash; van technisch tot strategisch.
-              </p>
-            </motion.div>
-
-            <div className="space-y-6">
-              {clusterMeta.map((cluster) => (
-                <motion.div
-                  key={cluster.id}
-                  variants={fadeUp}
-                  className="glass rounded-2xl p-7 md:p-9"
-                  style={{ borderLeft: `3px solid ${cluster.border}` }}
-                >
-                  {/* Cluster header */}
-                  <div className="flex items-center gap-3 mb-6">
-                    <span
-                      className="text-xs font-bold uppercase tracking-[0.2em] px-3 py-1.5 rounded-full"
-                      style={{
-                        color: cluster.labelColor,
-                        backgroundColor: cluster.bg,
-                        border: `1px solid ${cluster.border}`,
-                      }}
-                    >
-                      {cluster.label}
-                    </span>
-                    <span className="text-xs" style={{ color: 'rgba(232,240,236,0.25)' }}>
-                      {cluster.items.length} bevindingen
-                    </span>
-                  </div>
-
-                  {/* Compact reason items */}
-                  <div className="space-y-4">
-                    {cluster.items.map((reason) => (
-                      <div key={reason.number} className="flex gap-4">
-                        <div
-                          className="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center text-xs font-bold mt-0.5"
-                          style={{
-                            backgroundColor: cluster.bg,
-                            color: cluster.labelColor,
-                            border: `1px solid ${cluster.border}`,
-                          }}
-                        >
-                          {reason.number}
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-semibold text-taiga-text mb-1 leading-tight">
-                            {reason.title}
-                          </h3>
-                          <p className="text-xs text-taiga-text/50 leading-relaxed">
-                            {reason.description}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
+              {scores.map((item, i) => (
+                <ScoreBar key={item.label} item={item} index={i} />
               ))}
             </div>
+
+            <div className="section-divider mt-8" />
+
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              className="mt-6 flex items-center justify-between"
+            >
+              <span className="text-sm font-semibold text-taiga-text/50 uppercase tracking-wider">
+                Gemiddeld
+              </span>
+              <div className="flex items-center gap-3">
+                <span className="font-heading text-3xl font-bold" style={{ color: '#f87171' }}>
+                  {avg}/10
+                </span>
+                <span
+                  className="text-sm font-semibold px-3 py-1 rounded-full"
+                  style={{
+                    color: '#f87171',
+                    backgroundColor: 'rgba(248,113,113,0.12)',
+                    border: '1px solid rgba(248,113,113,0.25)',
+                  }}
+                >
+                  {pct}%
+                </span>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <div className="section-divider mx-auto w-2/3" />
+
+      {/* ==============================================
+          MOMENT 3 — THE DIAGNOSIS
+          ============================================== */}
+      <section className="py-28 md:py-40 px-6">
+        <div className="max-w-6xl mx-auto">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-60px' }}
+            variants={staggerContainer}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {/* Technisch */}
+              <motion.div variants={staggerItem}>
+                <h3
+                  className="font-heading text-xl md:text-2xl font-bold mb-8"
+                  style={{ color: '#f87171' }}
+                >
+                  Technisch
+                </h3>
+                <div className="space-y-4">
+                  {clusterTech.map((r) => (
+                    <div key={r.number} className="flex gap-3 items-start">
+                      <span
+                        className="flex-shrink-0 font-heading font-bold text-lg"
+                        style={{ color: 'rgba(248,113,113,0.5)' }}
+                      >
+                        {String(r.number).padStart(2, '0')}
+                      </span>
+                      <span className="text-sm font-semibold text-taiga-text/80 leading-tight">
+                        {r.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Content */}
+              <motion.div variants={staggerItem}>
+                <h3
+                  className="font-heading text-xl md:text-2xl font-bold mb-8"
+                  style={{ color: '#f59e0b' }}
+                >
+                  Content
+                </h3>
+                <div className="space-y-4">
+                  {clusterContent.map((r) => (
+                    <div key={r.number} className="flex gap-3 items-start">
+                      <span
+                        className="flex-shrink-0 font-heading font-bold text-lg"
+                        style={{ color: 'rgba(245,158,11,0.5)' }}
+                      >
+                        {String(r.number).padStart(2, '0')}
+                      </span>
+                      <span className="text-sm font-semibold text-taiga-text/80 leading-tight">
+                        {r.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Conversie */}
+              <motion.div variants={staggerItem}>
+                <h3
+                  className="font-heading text-xl md:text-2xl font-bold mb-8"
+                  style={{ color: '#a78bfa' }}
+                >
+                  Conversie
+                </h3>
+                <div className="space-y-4">
+                  {clusterConversie.map((r) => (
+                    <div key={r.number} className="flex gap-3 items-start">
+                      <span
+                        className="flex-shrink-0 font-heading font-bold text-lg"
+                        style={{ color: 'rgba(167,139,250,0.5)' }}
+                      >
+                        {String(r.number).padStart(2, '0')}
+                      </span>
+                      <span className="text-sm font-semibold text-taiga-text/80 leading-tight">
+                        {r.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.p
+              variants={fadeUp}
+              className="font-heading text-center mt-20"
+              style={{
+                fontSize: 'clamp(1.5rem, 4vw, 2.8rem)',
+                color: 'rgba(232,240,236,0.5)',
+                fontWeight: 300,
+                lineHeight: 1.3,
+              }}
+            >
+              Tier 1 fotograaf. <span style={{ color: '#f87171' }}>Tier 4 website.</span>
+            </motion.p>
           </motion.div>
         </div>
       </section>
 
       <div className="section-divider mx-auto w-2/3" />
 
-      {/* =============================================
-          SECTION 6 — CONTENT WASTE (formula + dots)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
+      {/* ==============================================
+          MOMENT 4 — THE WASTE
+          ============================================== */}
+      <section className="py-28 md:py-40 px-6">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial="hidden"
@@ -1150,49 +974,21 @@ export default function AnalysePage() {
             viewport={{ once: true, margin: '-60px' }}
             variants={staggerContainer}
           >
-            {/* Section header inline */}
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <p className="font-heading tracking-[0.25em] uppercase text-sm mb-3 font-semibold" style={{ color: '#a78bfa' }}>
-                Content Analyse
-              </p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold" style={{ color: '#e8f0ec' }}>
-                Content Verspilling
-              </h2>
-              <p className="mt-3 text-base md:text-lg" style={{ color: '#4a6358' }}>
-                300 potenti&euml;le content stukken. Slechts 10% benut.
-              </p>
-            </motion.div>
-
-            {/* Formula card */}
-            <motion.div
-              variants={fadeUp}
-              className="glass rounded-2xl p-7 md:p-10 mb-6 text-center"
-            >
-              <p className="text-xs uppercase tracking-[0.2em] mb-4" style={{ color: '#4a6358' }}>
-                Beschikbaar content potentieel
-              </p>
-              <div
-                className="font-heading font-light mb-3"
-                style={{ fontSize: 'clamp(1.1rem, 3vw, 1.4rem)', color: 'rgba(232,240,236,0.7)' }}
-              >
-                4 projecten &times; 15 beelden &times; 5 content vormen
-              </div>
-              <div
+            <motion.div variants={fadeUp} className="text-center mb-16">
+              <p
                 className="font-heading font-bold"
-                style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', color: '#a78bfa' }}
+                style={{
+                  fontSize: 'clamp(1.8rem, 5vw, 3.5rem)',
+                  color: 'rgba(232,240,236,0.7)',
+                }}
               >
-                = 300 potentieel
-              </div>
-              <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                <span style={{ color: 'rgba(232,240,236,0.4)' }}>Je benut er </span>
-                <span className="font-bold" style={{ color: '#f87171' }}>30</span>
-                <span style={{ color: 'rgba(232,240,236,0.4)' }}> &mdash; dat is slechts </span>
-                <span className="font-bold" style={{ color: '#f87171' }}>10%</span>
-              </div>
+                <span style={{ color: '#a78bfa' }}>300</span> mogelijkheden.{' '}
+                <span style={{ color: '#7dd3a8' }}>30</span> benut.{' '}
+                <span style={{ color: '#f87171' }}>10%.</span>
+              </p>
             </motion.div>
 
-            {/* Dot grid */}
-            <motion.div variants={fadeUp} className="glass rounded-2xl p-8">
+            <motion.div variants={fadeUp}>
               <DotGrid total={300} active={30} />
             </motion.div>
           </motion.div>
@@ -1201,116 +997,10 @@ export default function AnalysePage() {
 
       <div className="section-divider mx-auto w-2/3" />
 
-      {/* =============================================
-          SECTION 7 — FINANCIAL IMPACT (3 dramatic cards)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-            variants={staggerContainer}
-          >
-            {/* Section header inline */}
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <p className="font-heading tracking-[0.25em] uppercase text-sm mb-3 font-semibold" style={{ color: '#f59e0b' }}>
-                Financi&euml;le Impact
-              </p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold" style={{ color: '#e8f0ec' }}>
-                Wat het Kost
-              </h2>
-              <p className="mt-3 text-base md:text-lg" style={{ color: '#4a6358' }}>
-                Concrete gemiste kansen, nu, elke maand.
-              </p>
-            </motion.div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Card 1 — blue */}
-              <motion.div
-                variants={staggerItem}
-                className="glass tilt-card glow-border rounded-2xl p-8 text-center relative overflow-hidden"
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse at 80% 20%, rgba(56,189,248,0.1) 0%, transparent 60%)',
-                  }}
-                />
-                <div
-                  className="font-heading font-bold mb-3 relative"
-                  style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#38bdf8' }}
-                >
-                  1.000&ndash;5.000
-                </div>
-                <div className="text-sm font-semibold mb-1 relative" style={{ color: 'rgba(232,240,236,0.7)' }}>
-                  Gemiste bezoekers/mnd
-                </div>
-                <div className="text-xs relative" style={{ color: 'rgba(232,240,236,0.35)' }}>
-                  Organisch verkeer door SEO = 0
-                </div>
-              </motion.div>
-
-              {/* Card 2 — amber */}
-              <motion.div
-                variants={staggerItem}
-                className="glass tilt-card glow-border rounded-2xl p-8 text-center relative overflow-hidden"
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse at 80% 20%, rgba(245,158,11,0.1) 0%, transparent 60%)',
-                  }}
-                />
-                <div
-                  className="font-heading font-bold mb-3 relative"
-                  style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#f59e0b' }}
-                >
-                  &euro;500&ndash;2.000
-                </div>
-                <div className="text-sm font-semibold mb-1 relative" style={{ color: 'rgba(232,240,236,0.7)' }}>
-                  Per gemiste opdracht
-                </div>
-                <div className="text-xs relative" style={{ color: 'rgba(232,240,236,0.35)' }}>
-                  Event shoot, redactioneel werk
-                </div>
-              </motion.div>
-
-              {/* Card 3 — red */}
-              <motion.div
-                variants={staggerItem}
-                className="glass tilt-card glow-border rounded-2xl p-8 text-center relative overflow-hidden"
-              >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: 'radial-gradient(ellipse at 80% 20%, rgba(248,113,113,0.1) 0%, transparent 60%)',
-                  }}
-                />
-                <div
-                  className="font-heading font-bold mb-3 relative"
-                  style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#f87171' }}
-                >
-                  &euro;15K&ndash;30K
-                </div>
-                <div className="text-sm font-semibold mb-1 relative" style={{ color: 'rgba(232,240,236,0.7)' }}>
-                  Gemiste jaaromzet
-                </div>
-                <div className="text-xs relative" style={{ color: 'rgba(232,240,236,0.35)' }}>
-                  Door digitale onzichtbaarheid
-                </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      <div className="section-divider mx-auto w-2/3" />
-
-      {/* =============================================
-          SECTION 8 — SOLUTIONS (2x2 grid with impact)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
+      {/* ==============================================
+          MOMENT 5 — THE SOLUTION
+          ============================================== */}
+      <section className="py-28 md:py-40 px-6">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial="hidden"
@@ -1318,47 +1008,30 @@ export default function AnalysePage() {
             viewport={{ once: true, margin: '-60px' }}
             variants={staggerContainer}
           >
-            {/* Section header inline */}
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <p className="font-heading tracking-[0.25em] uppercase text-sm mb-3 font-semibold" style={{ color: '#7dd3a8' }}>
-                Oplossing
-              </p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold" style={{ color: '#e8f0ec' }}>
-                Het Plan
-              </h2>
-              <p className="mt-3 text-base md:text-lg" style={{ color: '#4a6358' }}>
-                Vier modules die Tijmen van onzichtbaar naar onvermijdelijk brengen.
-              </p>
-            </motion.div>
+            <motion.h2
+              variants={fadeUp}
+              className="font-heading text-3xl md:text-5xl font-bold mb-16"
+              style={{ color: '#e8f0ec' }}
+            >
+              Wat AetherLink Doet
+            </motion.h2>
 
             <div className="grid md:grid-cols-2 gap-5">
-              {solutions.map((solution, i) => (
+              {solutions.map((sol) => (
                 <motion.div
-                  key={solution.title}
+                  key={sol.title}
                   variants={staggerItem}
-                  className="glass glass-hover rounded-2xl p-7 relative overflow-hidden"
-                  style={{ borderTop: `2px solid ${solution.color}40` }}
+                  className="glass glass-hover rounded-2xl p-8 relative overflow-hidden"
+                  style={{ borderTop: `2px solid ${sol.color}` }}
                 >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div
-                      className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold font-heading"
-                      style={{
-                        backgroundColor: `${solution.color}14`,
-                        color: solution.color,
-                        border: `1px solid ${solution.color}30`,
-                      }}
-                    >
-                      {String(i + 1).padStart(2, '0')}
-                    </div>
-                    <h4
-                      className="text-base font-semibold leading-tight"
-                      style={{ color: solution.color }}
-                    >
-                      {solution.title}
-                    </h4>
-                  </div>
+                  <h4
+                    className="font-heading text-lg font-bold mb-3"
+                    style={{ color: sol.color }}
+                  >
+                    {sol.title}
+                  </h4>
                   <p className="text-sm text-taiga-text/55 leading-relaxed">
-                    {solution.description}
+                    {sol.description}
                   </p>
                 </motion.div>
               ))}
@@ -1369,310 +1042,140 @@ export default function AnalysePage() {
 
       <div className="section-divider mx-auto w-2/3" />
 
-      {/* =============================================
-          SECTION 9 — BEFORE/AFTER (clean comparison)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
-        <div className="max-w-3xl mx-auto">
+      {/* ==============================================
+          MOMENT 6 — THE FUTURE
+          ============================================== */}
+      <section className="py-28 md:py-40 px-6 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: '-60px' }}
             variants={staggerContainer}
           >
-            {/* Section header inline */}
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <p className="font-heading tracking-[0.25em] uppercase text-sm mb-3 font-semibold" style={{ color: '#38bdf8' }}>
-                Transformatie
-              </p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold" style={{ color: '#e8f0ec' }}>
-                Voor &amp; Na
-              </h2>
-              <p className="mt-3 text-base md:text-lg" style={{ color: '#4a6358' }}>
-                Het verschil na 6 maanden met AetherLink.
-              </p>
-            </motion.div>
-
-            <motion.div variants={fadeUp} className="glass rounded-2xl p-7 md:p-10">
-              {/* Header row */}
-              <div
-                className="grid grid-cols-3 gap-4 pb-4 mb-1 border-b"
-                style={{ borderColor: 'rgba(255,255,255,0.08)' }}
+            {/* Split screen */}
+            {metricsCount > 0 && (
+              <span className="sr-only">{metricsCount} metrics geanalyseerd</span>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 mb-20 rounded-2xl overflow-hidden">
+              {/* LEFT: red */}
+              <motion.div
+                variants={staggerItem}
+                className="relative p-10 md:p-14"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(248,113,113,0.08) 0%, rgba(11,20,16,0.95) 100%)',
+                  borderRight: '1px solid rgba(255,255,255,0.04)',
+                }}
               >
-                <div className="text-xs text-taiga-muted uppercase tracking-wider">Kanaal</div>
                 <div
-                  className="text-xs uppercase tracking-wider text-center font-semibold"
+                  className="absolute top-0 left-0 w-full h-1"
+                  style={{ background: 'linear-gradient(90deg, #f87171, transparent)' }}
+                />
+                <h3
+                  className="font-heading text-lg font-bold uppercase tracking-[0.2em] mb-12"
                   style={{ color: '#f87171' }}
                 >
-                  Nu
+                  Zonder actie
+                </h3>
+                <div className="space-y-10">
+                  {scenarioA.filter((_, idx) => idx !== 1).map((row) => (
+                    <div key={`a-${row.metric}`}>
+                      <div className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(248,113,113,0.5)' }}>
+                        {row.metric}
+                      </div>
+                      <div className="font-heading font-bold text-4xl" style={{ color: '#f87171' }}>
+                        {row.a[0]} &rarr; {row.a[2]}
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              </motion.div>
+
+              {/* RIGHT: green */}
+              <motion.div
+                variants={staggerItem}
+                className="relative p-10 md:p-14"
+                style={{
+                  background: 'linear-gradient(225deg, rgba(125,211,168,0.08) 0%, rgba(11,20,16,0.95) 100%)',
+                }}
+              >
                 <div
-                  className="text-xs uppercase tracking-wider text-center font-semibold"
+                  className="absolute top-0 right-0 w-full h-1"
+                  style={{ background: 'linear-gradient(270deg, #7dd3a8, transparent)' }}
+                />
+                <h3
+                  className="font-heading text-lg font-bold uppercase tracking-[0.2em] mb-12"
                   style={{ color: '#7dd3a8' }}
                 >
-                  Na 6 maanden
-                </div>
-              </div>
-
-              {/* Data rows */}
-              <motion.div
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: '-60px' }}
-                variants={staggerContainer}
-              >
-                {compareData.map((item) => (
-                  <motion.div
-                    key={item.label}
-                    variants={staggerItem}
-                    className="grid grid-cols-3 gap-4 py-3.5 border-b"
-                    style={{ borderColor: 'rgba(255,255,255,0.05)' }}
-                  >
-                    <div className="text-sm text-taiga-text/65">{item.label}</div>
-                    <div
-                      className="text-sm font-semibold text-center"
-                      style={{ color: '#f87171' }}
-                    >
-                      {item.before}
+                  Met AetherLink
+                </h3>
+                <div className="space-y-10">
+                  <div>
+                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(125,211,168,0.5)' }}>
+                      Bezoekers / maand
                     </div>
-                    <div
-                      className="text-sm font-semibold text-center"
-                      style={{ color: '#7dd3a8' }}
-                    >
-                      {item.after}
+                    <div className="font-heading font-bold text-4xl" style={{ color: '#7dd3a8' }}>
+                      50 &rarr; <CountUp target={15000} duration={2.5} />
                     </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              <p className="text-xs text-center mt-5" style={{ color: 'rgba(232,240,236,0.2)' }}>
-                Prognose gebaseerd op vergelijkbare trajecten
-              </p>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      <div className="section-divider mx-auto w-2/3" />
-
-      {/* =============================================
-          SECTION 10 — 3-YEAR PROJECTION (the climax)
-          ============================================= */}
-      <section className="py-24 md:py-36 px-6">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-60px' }}
-            variants={staggerContainer}
-          >
-            {/* Section header inline */}
-            <motion.div variants={fadeUp} className="mb-14 text-center">
-              <p className="font-heading tracking-[0.25em] uppercase text-sm mb-3 font-semibold" style={{ color: '#a78bfa' }}>
-                3-Jaar Projectie
-              </p>
-              <h2 className="font-heading text-3xl md:text-5xl font-bold" style={{ color: '#e8f0ec' }}>
-                Twee Toekomsten
-              </h2>
-              <p className="mt-3 text-base md:text-lg" style={{ color: '#4a6358' }}>
-                Dezelfde fotograaf. Radicaal verschillende resultaten. Jij kiest.
-              </p>
-            </motion.div>
-
-            {/* Two scenario panels side by side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              {/* Scenario A — red */}
-              <motion.div
-                variants={staggerItem}
-                className="glass rounded-2xl p-6"
-                style={{ borderLeft: '3px solid rgba(239,68,68,0.6)' }}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold font-heading flex-shrink-0"
-                    style={{
-                      backgroundColor: 'rgba(239,68,68,0.12)',
-                      color: '#f87171',
-                      border: '1px solid rgba(239,68,68,0.25)',
-                    }}
-                  >
-                    A
                   </div>
-                  <h3 className="text-base font-semibold" style={{ color: '#f87171' }}>
-                    Niets Verandert
-                  </h3>
-                </div>
-                <p className="text-xs mb-5" style={{ color: 'rgba(232,240,236,0.35)' }}>
-                  Dalend &mdash; concurrenten met SEO winnen terrein
-                </p>
-                <div className="space-y-3">
-                  {projectionData.map((row) => (
-                    <div key={`a-${row.metric}`} className="flex items-center justify-between py-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-                      <span className="text-xs text-taiga-text/55 font-medium">{row.metric}</span>
-                      <div className="flex gap-4">
-                        {row.a.map((val, i) => (
-                          <span key={i} className="text-xs font-semibold w-12 sm:w-16 text-center" style={{ color: 'rgba(248,113,113,0.75)' }}>
-                            {val}
-                          </span>
-                        ))}
-                      </div>
+                  <div>
+                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(125,211,168,0.5)' }}>
+                      Opdrachten / maand
                     </div>
-                  ))}
-                </div>
-                <div className="flex justify-end gap-4 mt-2">
-                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J1</span>
-                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J2</span>
-                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J3</span>
-                </div>
-              </motion.div>
-
-              {/* Scenario B — green */}
-              <motion.div
-                variants={staggerItem}
-                className="glass rounded-2xl p-6"
-                style={{ borderLeft: '3px solid rgba(125,211,168,0.6)' }}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold font-heading flex-shrink-0"
-                    style={{
-                      backgroundColor: 'rgba(125,211,168,0.12)',
-                      color: '#7dd3a8',
-                      border: '1px solid rgba(125,211,168,0.25)',
-                    }}
-                  >
-                    B
+                    <div className="font-heading font-bold text-4xl" style={{ color: '#7dd3a8' }}>
+                      2 &rarr; <CountUp target={25} duration={2} />
+                    </div>
                   </div>
-                  <h3 className="text-base font-semibold" style={{ color: '#7dd3a8' }}>
-                    Met AetherLink
-                  </h3>
-                </div>
-                <p className="text-xs mb-5" style={{ color: 'rgba(232,240,236,0.35)' }}>
-                  Exponenti&euml;le groei dankzij SEO + AI discoverability
-                </p>
-                <div className="space-y-3">
-                  {projectionData.map((row) => (
-                    <div key={`b-${row.metric}`} className="flex items-center justify-between py-2 border-b" style={{ borderColor: 'rgba(255,255,255,0.04)' }}>
-                      <span className="text-xs text-taiga-text/55 font-medium">{row.metric}</span>
-                      <div className="flex gap-4">
-                        {row.b.map((val, i) => (
-                          <span key={i} className="text-xs font-semibold w-12 sm:w-16 text-center" style={{ color: 'rgba(125,211,168,0.9)' }}>
-                            {val}
-                          </span>
-                        ))}
-                      </div>
+                  <div>
+                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: 'rgba(125,211,168,0.5)' }}>
+                      Jaaromzet
                     </div>
-                  ))}
-                </div>
-                <div className="flex justify-end gap-4 mt-2">
-                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J1</span>
-                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J2</span>
-                  <span className="text-[10px] text-taiga-muted w-12 sm:w-16 text-center">J3</span>
+                    <div className="font-heading font-bold text-4xl" style={{ color: '#7dd3a8' }}>
+                      &euro;<CountUp target={380} suffix="K" duration={2.5} />
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>
 
-            {/* THE BIG REVEAL panel */}
-            <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden">
+            {/* THE BIG REVEAL */}
+            <motion.div variants={fadeUp} className="text-center">
               <div
-                className="absolute inset-0 animate-aurora-pulse pointer-events-none"
-                style={{
-                  background: 'radial-gradient(ellipse at 50% 50%, rgba(125,211,168,0.08) 0%, rgba(56,189,248,0.05) 40%, transparent 70%)',
-                }}
-              />
-              <div className="glass relative rounded-2xl p-8 md:p-12">
-                <h3
-                  className="text-center font-heading text-lg font-semibold mb-10 uppercase tracking-[0.15em]"
-                  style={{ color: 'rgba(232,240,236,0.4)' }}
-                >
-                  Cumulatief omzetverschil over 3 jaar
-                </h3>
+                className="font-heading font-bold text-gradient-aurora"
+                style={{ fontSize: 'clamp(4rem, 10vw, 7rem)', lineHeight: 1 }}
+              >
+                +&euro;320.000
+              </div>
+              <p
+                className="text-lg mt-4 mb-16"
+                style={{ color: 'rgba(232,240,236,0.4)' }}
+              >
+                verschil over 3 jaar
+              </p>
 
-                {/* The dramatic comparison */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-16 mb-10">
-                  <div className="text-center">
-                    <div className="text-xs uppercase tracking-[0.25em] mb-3" style={{ color: '#4a6358' }}>
-                      Scenario A
-                    </div>
-                    <div
-                      className="font-heading font-bold"
-                      style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#f87171' }}
-                    >
-                      &euro;60.000
-                    </div>
+              <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8">
+                <div className="glass rounded-xl px-6 py-4 text-center">
+                  <div className="text-xs uppercase tracking-wider mb-1" style={{ color: '#4a6358' }}>
+                    Investering
                   </div>
-
-                  {/* VS */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-px h-8 md:hidden" style={{ background: 'rgba(255,255,255,0.08)' }} />
-                    <span
-                      className="text-xs font-bold tracking-[0.3em] my-2"
-                      style={{ color: 'rgba(255,255,255,0.15)' }}
-                    >
-                      VS
-                    </span>
-                    <div className="w-px h-8 md:hidden" style={{ background: 'rgba(255,255,255,0.08)' }} />
-                  </div>
-
-                  <div className="text-center">
-                    <div className="text-xs uppercase tracking-[0.25em] mb-3" style={{ color: '#4a6358' }}>
-                      Scenario B
-                    </div>
-                    <div
-                      className="font-heading font-bold"
-                      style={{ fontSize: 'clamp(2.5rem, 5vw, 3.5rem)', color: '#7dd3a8' }}
-                    >
-                      &euro;380.000
-                    </div>
+                  <div className="font-heading text-xl font-bold" style={{ color: '#e8f0ec' }}>
+                    &euro;28.125
                   </div>
                 </div>
-
-                {/* HUGE difference number */}
-                <div className="text-center mb-10">
-                  <div
-                    className="font-heading font-bold text-gradient-aurora"
-                    style={{ fontSize: 'clamp(3rem, 8vw, 5rem)' }}
-                  >
-                    +&euro;320.000
+                <div className="glass rounded-xl px-6 py-4 text-center">
+                  <div className="text-xs uppercase tracking-wider mb-1" style={{ color: '#4a6358' }}>
+                    ROI
                   </div>
-                  <p className="text-sm mt-2" style={{ color: 'rgba(232,240,236,0.4)' }}>
-                    extra omzet met AetherLink
-                  </p>
+                  <div className="font-heading text-xl font-bold" style={{ color: '#f59e0b' }}>
+                    127%
+                  </div>
                 </div>
-
-                {/* Emotional text */}
-                <p
-                  className="text-center font-heading text-lg md:text-xl font-medium mb-10 max-w-2xl mx-auto"
-                  style={{ color: 'rgba(232,240,236,0.5)' }}
-                >
-                  Dat is het verschil tussen onzichtbaar blijven en een platform worden.
-                </p>
-
-                {/* Three metric cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="glass rounded-xl p-5 text-center">
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: '#4a6358' }}>
-                      Investering
-                    </div>
-                    <div className="font-heading text-2xl font-bold" style={{ color: '#e8f0ec' }}>
-                      &euro;28.125
-                    </div>
+                <div className="glass rounded-xl px-6 py-4 text-center">
+                  <div className="text-xs uppercase tracking-wider mb-1" style={{ color: '#4a6358' }}>
+                    Terugverdiend in
                   </div>
-                  <div className="glass rounded-xl p-5 text-center">
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: '#4a6358' }}>
-                      Extra Omzet Jaar 1
-                    </div>
-                    <div className="font-heading text-2xl font-bold" style={{ color: '#7dd3a8' }}>
-                      &euro;36.000
-                    </div>
-                  </div>
-                  <div className="glass rounded-xl p-5 text-center">
-                    <div className="text-xs uppercase tracking-wider mb-2" style={{ color: '#4a6358' }}>
-                      ROI
-                    </div>
-                    <div className="font-heading text-2xl font-bold" style={{ color: '#f59e0b' }}>
-                      127%
-                    </div>
+                  <div className="font-heading text-xl font-bold" style={{ color: '#7dd3a8' }}>
+                    8 maanden
                   </div>
                 </div>
               </div>
@@ -1683,11 +1186,10 @@ export default function AnalysePage() {
 
       <div className="section-divider mx-auto w-2/3" />
 
-      {/* =============================================
-          SECTION 11 — CTA (dramatic close)
-          ============================================= */}
-      <section className="py-32 md:py-48 px-6 relative overflow-hidden">
-        {/* Two ambient glow circles */}
+      {/* ==============================================
+          MOMENT 7 — THE CLOSE
+          ============================================== */}
+      <section className="py-36 md:py-52 px-6 relative overflow-hidden">
         <div
           className="absolute pointer-events-none"
           style={{
@@ -1714,31 +1216,14 @@ export default function AnalysePage() {
             viewport={{ once: true, margin: '-60px' }}
             variants={staggerContainer}
           >
-            <motion.div
-              variants={fadeIn}
-              className="text-xs font-semibold uppercase mb-8"
-              style={{ letterSpacing: '0.35em', color: '#4a6358' }}
-            >
-              Volgende stap
-            </motion.div>
-
             <motion.h2
               variants={fadeUp}
-              className="font-heading font-bold mb-8"
+              className="font-heading font-bold mb-12"
               style={{ fontSize: 'clamp(2.5rem, 7vw, 5.5rem)', lineHeight: 1.05 }}
             >
               <span style={{ color: '#e8f0ec' }}>Klaar om </span>
               <span className="text-gradient-aurora">gezien te worden?</span>
             </motion.h2>
-
-            <motion.p
-              variants={fadeUp}
-              className="text-lg max-w-xl mx-auto mb-14 leading-relaxed"
-              style={{ color: 'rgba(232,240,236,0.45)' }}
-            >
-              Jouw foto&rsquo;s vertellen al verhalen die de wereld moet zien.
-              Laten we ervoor zorgen dat de wereld ze ook vindt.
-            </motion.p>
 
             <motion.div
               variants={staggerContainer}
@@ -1772,12 +1257,12 @@ export default function AnalysePage() {
 
             <motion.div
               variants={fadeIn}
-              className="mt-24 text-xs"
+              className="mt-28 text-xs"
               style={{ color: '#4a6358' }}
             >
               <p>AetherLink B.V. &mdash; Maart 2026</p>
               <p className="mt-1" style={{ color: 'rgba(74,99,88,0.4)' }}>
-                Deze analyse is vertrouwelijk opgesteld voor Tijmen Berens
+                Vertrouwelijk opgesteld voor Tijmen Berens
               </p>
             </motion.div>
           </motion.div>
