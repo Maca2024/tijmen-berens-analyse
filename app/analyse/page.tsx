@@ -619,6 +619,202 @@ function SectionHeading({
 }
 
 /* ══════════════════════════════════════════════
+   NANO BANNANA — LIVING CANVAS (mouse-reactive particle field)
+   ══════════════════════════════════════════════ */
+
+function LivingCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef({ x: 0.5, y: 0.5 });
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let animId: number;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const onMove = (e: MouseEvent) => {
+      mouseRef.current = {
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      };
+    };
+    window.addEventListener('mousemove', onMove);
+
+    // Particles — subtle, photography-inspired (light leak aesthetic)
+    const particles: Array<{
+      x: number; y: number; vx: number; vy: number;
+      size: number; hue: number; life: number;
+    }> = [];
+
+    for (let i = 0; i < 120; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 2 + 0.5,
+        hue: Math.random() * 40 + 140, // green-teal range (brand)
+        life: Math.random(),
+      });
+    }
+
+    const draw = (time: number) => {
+      ctx.fillStyle = 'rgba(11, 20, 16, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const mx = mouseRef.current.x * canvas.width;
+      const my = mouseRef.current.y * canvas.height;
+
+      for (const p of particles) {
+        const dx = mx - p.x;
+        const dy = my - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Gentle mouse attraction
+        if (dist < 250) {
+          const force = (250 - dist) / 250 * 0.008;
+          p.vx += dx * force;
+          p.vy += dy * force;
+        }
+
+        // Organic drift (Perlin-like)
+        p.vx += Math.sin(time * 0.0005 + p.y * 0.005) * 0.003;
+        p.vy += Math.cos(time * 0.0005 + p.x * 0.005) * 0.003;
+
+        p.vx *= 0.995;
+        p.vy *= 0.995;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Wrap
+        if (p.x < -10) p.x = canvas.width + 10;
+        if (p.x > canvas.width + 10) p.x = -10;
+        if (p.y < -10) p.y = canvas.height + 10;
+        if (p.y > canvas.height + 10) p.y = -10;
+
+        // Breathing alpha
+        p.life += 0.002;
+        const alpha = (Math.sin(p.life * Math.PI * 2) * 0.3 + 0.4) * (dist < 250 ? 0.7 : 0.25);
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue + mouseRef.current.x * 30}, 60%, 55%, ${alpha})`;
+        ctx.fill();
+
+        // Connection lines near mouse
+        if (dist < 180) {
+          for (let j = particles.indexOf(p) + 1; j < particles.length; j++) {
+            const q = particles[j];
+            const d2 = Math.hypot(p.x - q.x, p.y - q.y);
+            if (d2 < 100) {
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(q.x, q.y);
+              ctx.strokeStyle = `hsla(${p.hue}, 40%, 50%, ${0.06 * (1 - d2 / 100)})`;
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    animId = requestAnimationFrame(draw);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', onMove);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 -z-20 pointer-events-none"
+      aria-hidden="true"
+    />
+  );
+}
+
+/* ══════════════════════════════════════════════
+   NANO BANNANA — MAGNETIC CURSOR
+   ══════════════════════════════════════════════ */
+
+function MagneticCursor() {
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+  const springX = useSpring(cursorX, { damping: 25, stiffness: 200 });
+  const springY = useSpring(cursorY, { damping: 25, stiffness: 200 });
+  const [hoverType, setHoverType] = useState<'default' | 'link' | 'glass'>('default');
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Only show on non-touch devices
+    if ('ontouchstart' in window) return;
+
+    const move = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+      if (!visible) setVisible(true);
+    };
+
+    const over = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      if (t.closest('a, button, [data-magnetic]')) {
+        setHoverType('link');
+      } else if (t.closest('.glass')) {
+        setHoverType('glass');
+      } else {
+        setHoverType('default');
+      }
+    };
+
+    const leave = () => setVisible(false);
+
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseover', over);
+    document.addEventListener('mouseleave', leave);
+    return () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseover', over);
+      document.removeEventListener('mouseleave', leave);
+    };
+  }, [cursorX, cursorY, visible]);
+
+  if (!visible) return null;
+
+  const sizes = { default: 16, link: 48, glass: 28 };
+
+  return (
+    <motion.div
+      className="pointer-events-none fixed top-0 left-0 z-[9999] mix-blend-difference"
+      style={{ x: springX, y: springY, translateX: '-50%', translateY: '-50%' }}
+    >
+      <motion.div
+        className="rounded-full bg-white"
+        animate={{
+          width: sizes[hoverType],
+          height: sizes[hoverType],
+          opacity: hoverType === 'link' ? 0.9 : 0.6,
+        }}
+        transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+      />
+    </motion.div>
+  );
+}
+
+/* ══════════════════════════════════════════════
    MAIN PAGE
    ══════════════════════════════════════════════ */
 
@@ -627,8 +823,12 @@ export default function AnalysePage() {
   const pct = Math.round((avg / 10) * 100);
 
   return (
-    <main className="relative">
-      {/* ── Ambient Background ──────────────── */}
+    <main className="relative cursor-none">
+      {/* ── Nano Bannana: Living Canvas + Magnetic Cursor ── */}
+      <LivingCanvas />
+      <MagneticCursor />
+
+      {/* ── Ambient Background (layered over canvas) ── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div
           className="animate-aurora-pulse absolute"
