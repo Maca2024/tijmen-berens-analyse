@@ -54,7 +54,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="nl" className={`${cormorant.variable} ${outfit.variable}`}>
-      <body className="min-h-screen bg-taiga-bg text-taiga-text font-sans antialiased">
+      <body className="min-h-screen bg-taiga-bg text-taiga-text antialiased" style={{ fontFamily: 'var(--font-sans), system-ui, sans-serif' }}>
         <StructuredData />
         <a href="#main-content" className="skip-link">
           Ga naar hoofdinhoud
