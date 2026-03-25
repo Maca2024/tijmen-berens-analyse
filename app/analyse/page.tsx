@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import {
-  motion,
+  m as motion,
+  LazyMotion,
+  domAnimation,
   useInView,
   useMotionValue,
   useSpring,
@@ -253,13 +255,20 @@ function ScoreBar({ item, index }: { item: ScoreItem; index: number }) {
       springValue.set((item.score / item.max) * 100);
     }, index * 100);
     return () => clearTimeout(timeout);
-  }, [isInView, springValue, item.score, item.max, index]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInView, item.score, item.max, index]);
 
   const glow = `${item.color}66`;
 
   return (
     <motion.div
       ref={ref}
+      role="meter"
+      aria-label={item.label}
+      aria-valuenow={item.score}
+      aria-valuemin={0}
+      aria-valuemax={item.max}
+      aria-valuetext={`${item.score} van ${item.max}, ${item.verdict}`}
       initial={{ opacity: 0, x: -24 }}
       animate={isInView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.6, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
@@ -321,13 +330,15 @@ function CountUp({
 
   useEffect(() => {
     if (!isInView) return;
+    let mounted = true;
     const controls = animate(motionVal, target, {
       duration,
       ease: [0.16, 1, 0.3, 1],
-      onUpdate: (v) => setDisplay(Math.round(v)),
+      onUpdate: (v) => { if (mounted) setDisplay(Math.round(v)); },
     });
-    return () => controls.stop();
-  }, [isInView, motionVal, target, duration]);
+    return () => { mounted = false; controls.stop(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInView, target, duration]);
 
   return (
     <span ref={ref} className="tabular-nums">
@@ -419,6 +430,7 @@ function LivingCanvas() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     let animId: number;
@@ -463,7 +475,8 @@ function LivingCanvas() {
       const mx = mouseRef.current.x * canvas.width;
       const my = mouseRef.current.y * canvas.height;
 
-      for (const p of particles) {
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
         const dx = mx - p.x;
         const dy = my - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -499,9 +512,9 @@ function LivingCanvas() {
         ctx.fillStyle = `hsla(${p.hue + mouseRef.current.x * 30}, 60%, 55%, ${alpha})`;
         ctx.fill();
 
-        // Connection lines near mouse
+        // Connection lines near mouse (O(n²) — indexed, no indexOf)
         if (dist < 180) {
-          for (let j = particles.indexOf(p) + 1; j < particles.length; j++) {
+          for (let j = i + 1; j < particles.length; j++) {
             const q = particles[j];
             const d2 = Math.hypot(p.x - q.x, p.y - q.y);
             if (d2 < 100) {
@@ -580,7 +593,8 @@ function MagneticCursor() {
       window.removeEventListener('mouseover', over);
       document.removeEventListener('mouseleave', leave);
     };
-  }, [cursorX, cursorY, visible]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -645,7 +659,8 @@ export default function AnalysePage() {
   ];
 
   return (
-    <main className="relative cursor-none">
+    <LazyMotion features={domAnimation} strict>
+    <main className="relative" id="main-content">
       {/* ── Nano Bannana: Living Canvas + Magnetic Cursor ── */}
       <LivingCanvas />
       <MagneticCursor />
@@ -1099,9 +1114,9 @@ export default function AnalysePage() {
                           {reason.number}
                         </div>
                         <div>
-                          <h4 className="text-sm font-semibold text-taiga-text mb-1 leading-tight">
+                          <h3 className="text-sm font-semibold text-taiga-text mb-1 leading-tight">
                             {reason.title}
-                          </h4>
+                          </h3>
                           <p className="text-xs text-taiga-text/50 leading-relaxed">
                             {reason.description}
                           </p>
@@ -1736,7 +1751,7 @@ export default function AnalysePage() {
                 }}
               >
                 Plan een Gesprek
-                <span className="text-base">&rarr;</span>
+                <span className="text-base" aria-hidden="true">&rarr;</span>
               </motion.a>
 
               <motion.a
@@ -1763,5 +1778,6 @@ export default function AnalysePage() {
         </div>
       </section>
     </main>
+    </LazyMotion>
   );
 }
