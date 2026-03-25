@@ -4,8 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import {
   motion,
   useInView,
+  useMotionValue,
   useSpring,
   useTransform,
+  animate,
   type Variants,
 } from 'framer-motion';
 
@@ -86,7 +88,7 @@ const reasons: ReasonItem[] = [
     number: 1,
     title: 'robots.txt blokkeert ALLE AI crawlers',
     description:
-      'GPTBot, ClaudeBot, Google-Extended \u2014 allemaal geblokkeerd. Zijn werk is onzichtbaar voor ChatGPT, Perplexity en Google AI.',
+      'GPTBot, ClaudeBot, Google-Extended — allemaal geblokkeerd. Zijn werk is onzichtbaar voor ChatGPT, Perplexity en Google AI.',
   },
   {
     number: 2,
@@ -104,7 +106,7 @@ const reasons: ReasonItem[] = [
     number: 4,
     title: '~50 afbeeldingen zonder alt text',
     description:
-      'Voor een fotograaf catastrofaal. Google Images \u2014 de grootste bron van verkeer voor fotografen \u2014 kan zijn werk niet indexeren.',
+      'Voor een fotograaf catastrofaal. Google Images — de grootste bron van verkeer voor fotografen — kan zijn werk niet indexeren.',
   },
   {
     number: 5,
@@ -116,7 +118,7 @@ const reasons: ReasonItem[] = [
     number: 6,
     title: 'Geen blog = geen SEO-verkeer',
     description:
-      '9 pagina\u2019s met ~300 woorden totaal. Concurrenten met blogs ranken op \u2018eventfotograaf Arnhem\u2019 \u2014 Tijmen niet.',
+      '9 pagina\u2019s met ~300 woorden totaal. Concurrenten met blogs ranken op \u2018eventfotograaf Arnhem\u2019 — Tijmen niet.',
   },
   {
     number: 7,
@@ -211,6 +213,7 @@ const compareData: CompareItem[] = [
 
 interface ProjectionRow {
   metric: string;
+  note?: string;
   a: [string, string, string];
   b: [string, string, string];
 }
@@ -218,23 +221,51 @@ interface ProjectionRow {
 const projectionData: ProjectionRow[] = [
   {
     metric: 'Website bezoekers/mnd',
+    note: 'organisch verkeer via Google',
     a: ['50', '40', '30'],
     b: ['3.000', '8.000', '15.000'],
   },
   {
     metric: 'Google ranking',
+    note: 'voor relevante zoektermen',
     a: ['Pagina 5+', 'Pagina 6+', 'Verdwenen'],
     b: ['Top 5 Arnhem', 'Top 3 NL doc foto', '#1 niche'],
   },
   {
     metric: 'Opdrachten/mnd',
+    note: 'betaalde shoots',
     a: ['2', '1-2', '1'],
     b: ['8', '15', '25'],
   },
   {
     metric: 'Jaaromzet',
+    note: 'fotografie & licenties',
     a: ['\u20ac24.000', '\u20ac20.000', '\u20ac16.000'],
     b: ['\u20ac60.000', '\u20ac120.000', '\u20ac200.000'],
+  },
+  {
+    metric: 'SEO score',
+    note: 'Lighthouse/GTmetrix',
+    a: ['27/100', '20/100', '15/100'],
+    b: ['90+', '92+', '95+'],
+  },
+  {
+    metric: 'GEO score',
+    note: 'AI discoverability',
+    a: ['8/100', '5/100', '3/100'],
+    b: ['85+', '90+', '95+'],
+  },
+  {
+    metric: 'Social volgers',
+    note: 'Instagram + LinkedIn',
+    a: ['3.200', '3.000', '2.800'],
+    b: ['8.000', '18.000', '35.000'],
+  },
+  {
+    metric: 'Print shop inkomsten',
+    note: 'passief inkomen',
+    a: ['\u20ac0', '\u20ac0', '\u20ac0'],
+    b: ['\u20ac2.400', '\u20ac6.000', '\u20ac12.000'],
   },
 ];
 
@@ -247,7 +278,7 @@ const projectionData: ProjectionRow[] = [
 function ScoreBar({ item, index }: { item: ScoreItem; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
-  const springValue = useSpring(0, { stiffness: 60, damping: 20 });
+  const springValue = useSpring(0, { stiffness: 60, damping: 18 });
   const width = useTransform(springValue, (v) => `${v}%`);
 
   useEffect(() => {
@@ -258,42 +289,47 @@ function ScoreBar({ item, index }: { item: ScoreItem; index: number }) {
     return () => clearTimeout(timeout);
   }, [isInView, springValue, item.score, item.max, index]);
 
+  const glow = `${item.color}66`;
+
   return (
     <motion.div
       ref={ref}
-      variants={staggerItem}
+      initial={{ opacity: 0, x: -24 }}
+      animate={isInView ? { opacity: 1, x: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
       className="group"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-taiga-text/80">
+      <div className="flex items-center gap-3 mb-2">
+        <span
+          className="text-sm font-medium text-taiga-text/80"
+          style={{ minWidth: '170px' }}
+        >
           {item.label}
         </span>
-        <div className="flex items-center gap-3">
-          <span
-            className="text-xs font-semibold px-2 py-0.5 rounded-full"
-            style={{
-              color: item.color,
-              backgroundColor: `${item.color}15`,
-              border: `1px solid ${item.color}30`,
-            }}
-          >
-            {item.verdict}
-          </span>
-          <span
-            className="text-lg font-bold tabular-nums"
-            style={{ color: item.color }}
-          >
-            {item.score}/{item.max}
-          </span>
-        </div>
+        <span
+          className="flex-1 text-xs font-semibold px-2 py-0.5 rounded-full text-center"
+          style={{
+            color: item.color,
+            backgroundColor: `${item.color}15`,
+            border: `1px solid ${item.color}30`,
+          }}
+        >
+          {item.verdict}
+        </span>
+        <span
+          className="font-heading text-lg font-bold tabular-nums"
+          style={{ color: item.color }}
+        >
+          {item.score}/{item.max}
+        </span>
       </div>
-      <div className="h-2 rounded-full bg-taiga-surface-2 overflow-hidden">
+      <div className="h-2 rounded-full bg-white/5 overflow-hidden">
         <motion.div
           className="h-full rounded-full"
           style={{
             width,
-            backgroundColor: item.color,
-            boxShadow: `0 0 12px ${item.color}40`,
+            background: `linear-gradient(90deg, ${item.color}cc, ${item.color})`,
+            boxShadow: `0 0 12px ${glow}`,
           }}
         />
       </div>
@@ -314,25 +350,18 @@ function CountUp({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
-  const springValue = useSpring(0, {
-    stiffness: 40,
-    damping: 25,
-    duration: duration * 1000,
-  });
+  const motionVal = useMotionValue(0);
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
-    if (isInView) {
-      springValue.set(target);
-    }
-  }, [isInView, springValue, target]);
-
-  useEffect(() => {
-    const unsubscribe = springValue.on('change', (v) => {
-      setDisplay(Math.round(v));
+    if (!isInView) return;
+    const controls = animate(motionVal, target, {
+      duration,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => setDisplay(Math.round(v)),
     });
-    return unsubscribe;
-  }, [springValue]);
+    return () => controls.stop();
+  }, [isInView, motionVal, target, duration]);
 
   return (
     <span ref={ref} className="tabular-nums">
@@ -354,16 +383,33 @@ function DotGrid({
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
 
-  const cols = 25;
+  const pct = Math.round((active / total) * 100);
+  const unused = total - active;
+  const unusedPct = Math.round((unused / total) * 100);
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-4">
+    <div ref={ref} className="flex flex-col items-center gap-6">
+      {/* Formula card */}
       <div
-        className="grid gap-[3px]"
-        style={{
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
-          maxWidth: `${cols * 14}px`,
-        }}
+        className="glass rounded-xl px-6 py-4 text-center text-sm"
+        style={{ maxWidth: '480px' }}
+      >
+        <p className="text-taiga-text/50 mb-1">
+          4 documentaire projecten &times; 15 beelden &times; 5 content vormen
+        </p>
+        <p className="text-base">
+          <span className="text-taiga-primary font-semibold">{total}</span>
+          {' '}
+          <span className="text-taiga-text/40">potenti&#235;le content stukken</span>
+          {' '}&mdash;{' '}
+          <span className="text-taiga-danger font-semibold">slechts {active} benut ({pct}%)</span>
+        </p>
+      </div>
+
+      {/* Dot grid */}
+      <div
+        className="flex flex-wrap gap-[3px] justify-center"
+        style={{ maxWidth: '440px' }}
       >
         {Array.from({ length: total }).map((_, i) => {
           const isActive = i < active;
@@ -377,17 +423,15 @@ function DotGrid({
                       opacity: 1,
                       scale: 1,
                       transition: {
-                        delay: i * 0.003,
+                        delay: i * 0.0012,
                         duration: 0.3,
                         ease: [0.16, 1, 0.3, 1],
                       },
                     }
                   : {}
               }
-              className="rounded-sm"
+              className="w-2 h-2 rounded-full"
               style={{
-                width: '10px',
-                height: '10px',
                 backgroundColor: isActive ? '#7dd3a8' : 'rgba(255,255,255,0.06)',
                 boxShadow: isActive ? '0 0 6px rgba(125,211,168,0.4)' : 'none',
               }}
@@ -395,23 +439,19 @@ function DotGrid({
           );
         })}
       </div>
+
+      {/* Legend */}
       <div className="flex items-center gap-6 text-sm">
         <div className="flex items-center gap-2">
-          <div
-            className="w-3 h-3 rounded-sm"
-            style={{ backgroundColor: '#7dd3a8' }}
-          />
+          <span style={{ color: '#7dd3a8', fontSize: '16px' }}>&#9679;</span>
           <span className="text-taiga-text/70">
-            Benut ({active} stuks = {Math.round((active / total) * 100)}%)
+            Benut ({active} = {pct}%)
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <div
-            className="w-3 h-3 rounded-sm"
-            style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}
-          />
+          <span style={{ color: 'rgba(255,255,255,0.12)', fontSize: '16px' }}>&#9679;</span>
           <span className="text-taiga-text/70">
-            Onbenut ({total - active} stuks = {Math.round(((total - active) / total) * 100)}%)
+            Onbenut ({unused} = {unusedPct}%)
           </span>
         </div>
       </div>
@@ -548,20 +588,25 @@ function CompareRow({ item }: { item: CompareItem }) {
 /* ── SectionHeading ───────────────────────────── */
 
 function SectionHeading({
-  number,
+  label,
+  labelColor,
   title,
   subtitle,
 }: {
-  number: string;
+  label: string;
+  labelColor?: string;
   title: string;
   subtitle?: string;
 }) {
   return (
     <motion.div variants={fadeUp} className="mb-12 text-center">
-      <div className="text-xs tracking-[0.3em] text-taiga-muted uppercase mb-3 font-medium">
-        {number}
+      <div className="text-xs tracking-[0.25em] uppercase mb-3 font-semibold">
+        <span style={{ color: labelColor ?? '#7dd3a8' }}>{label}</span>
       </div>
-      <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading font-light text-taiga-text mb-4">
+      <h2
+        className="font-heading text-3xl md:text-5xl font-bold mb-4"
+        style={{ color: '#e8f0ec' }}
+      >
         {title}
       </h2>
       {subtitle && (
@@ -578,47 +623,47 @@ function SectionHeading({
    ══════════════════════════════════════════════ */
 
 export default function AnalysePage() {
+  const avg = Math.round((scores.reduce((s, i) => s + i.score, 0) / scores.length) * 10) / 10;
+  const pct = Math.round((avg / 10) * 100);
+
   return (
     <main className="relative">
       {/* ── Ambient Background ──────────────── */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div
-          className="aurora-pulse absolute"
+          className="animate-aurora-pulse absolute"
           style={{
             top: '-20%',
             left: '-10%',
             width: '60%',
             height: '60%',
             borderRadius: '50%',
-            background:
-              'radial-gradient(ellipse, rgba(125,211,168,0.06) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(125,211,168,0.06) 0%, transparent 70%)',
             filter: 'blur(80px)',
           }}
         />
         <div
-          className="aurora-pulse absolute"
+          className="animate-aurora-pulse absolute"
           style={{
             top: '30%',
             right: '-15%',
             width: '50%',
             height: '50%',
             borderRadius: '50%',
-            background:
-              'radial-gradient(ellipse, rgba(56,189,248,0.04) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(56,189,248,0.04) 0%, transparent 70%)',
             filter: 'blur(80px)',
             animationDelay: '3s',
           }}
         />
         <div
-          className="aurora-pulse absolute"
+          className="animate-aurora-pulse absolute"
           style={{
             bottom: '-10%',
             left: '20%',
             width: '55%',
             height: '55%',
             borderRadius: '50%',
-            background:
-              'radial-gradient(ellipse, rgba(167,139,250,0.04) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse, rgba(167,139,250,0.04) 0%, transparent 70%)',
             filter: 'blur(80px)',
             animationDelay: '6s',
           }}
@@ -633,87 +678,134 @@ export default function AnalysePage() {
           initial="hidden"
           animate="visible"
           variants={staggerContainer}
-          className="text-center max-w-4xl mx-auto"
+          className="text-center max-w-5xl mx-auto"
         >
+          {/* Confidential label */}
           <motion.div
             variants={fadeIn}
-            className="text-xs tracking-[0.4em] text-taiga-muted uppercase mb-6 font-medium"
+            className="text-xs font-semibold uppercase mb-6"
+            style={{
+              letterSpacing: '0.35em',
+              color: '#7dd3a8',
+            }}
           >
-            AetherLink Intelligence
+            Vertrouwelijk Rapport
           </motion.div>
 
+          {/* Main title */}
           <motion.h1
             variants={fadeUp}
-            className="text-5xl md:text-7xl lg:text-8xl font-heading font-light mb-6"
+            className="font-heading font-bold mb-6 text-gradient-aurora"
+            style={{
+              fontSize: 'clamp(3.5rem, 10vw, 8rem)',
+              letterSpacing: '0.03em',
+              lineHeight: 1,
+            }}
           >
-            <span className="gradient-text">DIGITALE ANALYSE</span>
+            DIGITALE ANALYSE
           </motion.h1>
 
-          <motion.div variants={fadeUp} className="mb-4">
-            <span className="text-xl md:text-2xl text-taiga-text/80 font-heading font-light">
-              Tijmen Berens Photography
-            </span>
+          {/* Subtitle */}
+          <motion.div
+            variants={fadeUp}
+            className="font-heading font-light text-xl md:text-3xl mb-3"
+            style={{ color: '#e8f0ec', lineHeight: '0.92' }}
+          >
+            Tijmen Berens Photography — Waar sta je nu?
           </motion.div>
 
+          {/* Author */}
           <motion.p
-            variants={fadeUp}
-            className="text-taiga-text/40 text-lg md:text-xl font-light max-w-2xl mx-auto mb-4"
+            variants={fadeIn}
+            className="text-sm mt-4 mb-10"
+            style={{ color: '#4a6358' }}
           >
-            Waar sta je nu?
+            Opgesteld door AetherLink B.V. &middot; Maart 2026
           </motion.p>
 
+          {/* Credential pills */}
           <motion.div
             variants={fadeIn}
-            className="flex flex-wrap items-center justify-center gap-4 mt-8 mb-12"
+            className="flex flex-wrap items-center justify-center gap-3 mb-10"
           >
-            <div className="glass rounded-full px-4 py-1.5 text-xs text-taiga-text/50">
-              National Geographic Winner NL 2022
-            </div>
-            <div className="glass rounded-full px-4 py-1.5 text-xs text-taiga-text/50">
-              Documentaire & Event Fotograaf
-            </div>
-            <div className="glass rounded-full px-4 py-1.5 text-xs text-taiga-text/50">
-              Arnhem, Nederland
-            </div>
+            {[
+              'National Geographic Winner NL 2022',
+              'Documentaire & Event Fotograaf',
+              'Arnhem, Nederland',
+            ].map((pill) => (
+              <div
+                key={pill}
+                className="glass rounded-full px-4 py-1.5 text-xs font-medium"
+                style={{ color: 'rgba(232,240,236,0.5)', lineHeight: '0.92' }}
+              >
+                {pill}
+              </div>
+            ))}
           </motion.div>
 
+          {/* Score snapshot */}
           <motion.div
-            variants={fadeIn}
+            variants={fadeUp}
             className="glass rounded-2xl px-8 py-5 inline-block mb-16"
           >
             <div className="flex items-center gap-6 text-sm">
               <div>
-                <span className="text-taiga-muted">Totaalscore</span>
-                <div className="text-2xl font-bold gradient-text-warm mt-0.5">
-                  4.0<span className="text-base text-taiga-muted">/10</span>
+                <span style={{ color: '#4a6358' }}>Totaalscore</span>
+                <div className="text-2xl font-bold gradient-text-warm mt-0.5 font-heading">
+                  {avg}<span className="text-base" style={{ color: '#4a6358' }}>/10</span>
                 </div>
               </div>
-              <div className="w-px h-10 bg-taiga-border" />
+              <div className="w-px h-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
               <div>
-                <span className="text-taiga-muted">Vakmanschap</span>
-                <div className="text-2xl font-bold text-taiga-primary mt-0.5">
+                <span style={{ color: '#4a6358' }}>Vakmanschap</span>
+                <div className="text-2xl font-bold mt-0.5 font-heading" style={{ color: '#7dd3a8' }}>
                   9/10
                 </div>
               </div>
-              <div className="w-px h-10 bg-taiga-border" />
+              <div className="w-px h-10" style={{ background: 'rgba(255,255,255,0.06)' }} />
               <div>
-                <span className="text-taiga-muted">Digitaal</span>
-                <div className="text-2xl font-bold text-taiga-danger mt-0.5">
+                <span style={{ color: '#4a6358' }}>Digitaal</span>
+                <div className="text-2xl font-bold mt-0.5 font-heading" style={{ color: '#f87171' }}>
                   1.7/10
                 </div>
               </div>
             </div>
           </motion.div>
 
-          <motion.div variants={fadeIn}>
-            <div className="scroll-indicator text-taiga-muted text-2xl">
-              &#8595;
-            </div>
+          {/* Scroll hint SVG */}
+          <motion.div variants={fadeIn} className="flex justify-center">
+            <svg
+              className="animate-scroll-down"
+              width="24"
+              height="40"
+              viewBox="0 0 24 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <rect
+                x="1"
+                y="1"
+                width="22"
+                height="38"
+                rx="11"
+                stroke="rgba(74,99,88,0.5)"
+                strokeWidth="1.5"
+              />
+              <circle cx="12" cy="10" r="3" fill="rgba(125,211,168,0.6)" />
+              <path
+                d="M8 28l4 4 4-4"
+                stroke="rgba(74,99,88,0.5)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </motion.div>
         </motion.div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 2: SCORECARD
@@ -727,36 +819,66 @@ export default function AnalysePage() {
             variants={staggerContainer}
           >
             <SectionHeading
-              number="01"
+              label="Scorekaart"
+              labelColor="#7dd3a8"
               title="De Score"
               subtitle="Negen dimensies. Een pijnlijk contrast tussen talent en digitale zichtbaarheid."
             />
 
-            <div className="space-y-6">
+            <div className="glass rounded-2xl p-7 md:p-10 space-y-6">
               {scores.map((item, i) => (
                 <ScoreBar key={item.label} item={item} index={i} />
               ))}
+
+              {/* Overall score box */}
+              <div
+                className="mt-4 pt-6 border-t flex items-center justify-between"
+                style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+              >
+                <span className="text-sm font-semibold text-taiga-text/70 uppercase tracking-wider">
+                  Gemiddeld
+                </span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="font-heading text-3xl font-bold"
+                    style={{ color: '#f87171' }}
+                  >
+                    {avg}/10
+                  </span>
+                  <span
+                    className="text-sm font-semibold px-3 py-1 rounded-full"
+                    style={{
+                      color: '#f87171',
+                      backgroundColor: 'rgba(248,113,113,0.12)',
+                      border: '1px solid rgba(248,113,113,0.25)',
+                    }}
+                  >
+                    {pct}%
+                  </span>
+                </div>
+              </div>
             </div>
 
             <motion.div
               variants={fadeUp}
-              className="glass rounded-xl p-6 mt-10 text-center"
+              className="glass rounded-xl p-6 mt-8 text-center"
             >
               <p className="text-sm text-taiga-text/60 leading-relaxed">
-                <span className="text-taiga-primary font-semibold">
+                <span className="font-semibold" style={{ color: '#7dd3a8' }}>
                   Het patroon is helder:
                 </span>{' '}
-                Tijmen scoort <span className="text-taiga-primary font-semibold">9/10</span> op vakmanschap
-                maar <span className="text-taiga-danger font-semibold">1.4/10</span> op digitale
-                aanwezigheid. Zijn fotografie is wereldklasse. Zijn vindbaarheid is
-                onzichtbaar.
+                Tijmen scoort{' '}
+                <span className="font-semibold" style={{ color: '#7dd3a8' }}>9/10</span>{' '}
+                op vakmanschap maar{' '}
+                <span className="font-semibold" style={{ color: '#f87171' }}>1.4/10</span>{' '}
+                op digitale aanwezigheid. Zijn fotografie is wereldklasse. Zijn vindbaarheid is onzichtbaar.
               </p>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 3: BIG NUMBERS
@@ -770,7 +892,8 @@ export default function AnalysePage() {
             variants={staggerContainer}
           >
             <SectionHeading
-              number="02"
+              label="Realiteit"
+              labelColor="#38bdf8"
               title="De Realiteit"
               subtitle="Drie cijfers die het hele verhaal vertellen."
             />
@@ -780,13 +903,16 @@ export default function AnalysePage() {
                 variants={staggerItem}
                 className="glass rounded-2xl p-8 text-center"
               >
-                <div className="text-6xl md:text-7xl font-heading font-light text-taiga-primary mb-3">
+                <div
+                  className="font-heading font-light mb-3"
+                  style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', color: '#7dd3a8' }}
+                >
                   <CountUp target={5} />
                 </div>
-                <div className="text-sm text-taiga-text/50 uppercase tracking-wider mb-2">
-                  Awards & Erkenningen
+                <div className="text-sm uppercase tracking-wider mb-2" style={{ color: 'rgba(232,240,236,0.5)' }}>
+                  Awards &amp; Erkenningen
                 </div>
-                <div className="text-xs text-taiga-text/30">
+                <div className="text-xs" style={{ color: 'rgba(232,240,236,0.3)' }}>
                   NatGeo, Fotomuseum, 2x Life Framer, Trouw
                 </div>
               </motion.div>
@@ -795,13 +921,16 @@ export default function AnalysePage() {
                 variants={staggerItem}
                 className="glass rounded-2xl p-8 text-center"
               >
-                <div className="text-6xl md:text-7xl font-heading font-light text-taiga-warm mb-3">
+                <div
+                  className="font-heading font-light mb-3"
+                  style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', color: '#f59e0b' }}
+                >
                   <CountUp target={9} />
                 </div>
-                <div className="text-sm text-taiga-text/50 uppercase tracking-wider mb-2">
+                <div className="text-sm uppercase tracking-wider mb-2" style={{ color: 'rgba(232,240,236,0.5)' }}>
                   Pagina&rsquo;s op zijn website
                 </div>
-                <div className="text-xs text-taiga-text/30">
+                <div className="text-xs" style={{ color: 'rgba(232,240,236,0.3)' }}>
                   Zou 50+ moeten zijn voor een fotograaf van dit niveau
                 </div>
               </motion.div>
@@ -810,13 +939,16 @@ export default function AnalysePage() {
                 variants={staggerItem}
                 className="glass rounded-2xl p-8 text-center"
               >
-                <div className="text-6xl md:text-7xl font-heading font-light text-taiga-danger mb-3">
+                <div
+                  className="font-heading font-light mb-3"
+                  style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', color: '#f87171' }}
+                >
                   <CountUp target={0} />
                 </div>
-                <div className="text-sm text-taiga-text/50 uppercase tracking-wider mb-2">
+                <div className="text-sm uppercase tracking-wider mb-2" style={{ color: 'rgba(232,240,236,0.5)' }}>
                   Blog artikelen
                 </div>
-                <div className="text-xs text-taiga-text/30">
+                <div className="text-xs" style={{ color: 'rgba(232,240,236,0.3)' }}>
                   Nul SEO-verkeer. Nul zoekresultaten. Nul kansen.
                 </div>
               </motion.div>
@@ -825,7 +957,7 @@ export default function AnalysePage() {
         </div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 4: 10 REASONS WHY
@@ -839,7 +971,8 @@ export default function AnalysePage() {
             variants={staggerContainer}
           >
             <SectionHeading
-              number="03"
+              label="Diagnose"
+              labelColor="#f87171"
               title="10 Redenen Waarom"
               subtitle="Concrete technische en strategische tekortkomingen die Tijmen onzichtbaar houden."
             />
@@ -853,7 +986,7 @@ export default function AnalysePage() {
         </div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 5: CONTENT WASTE
@@ -867,36 +1000,20 @@ export default function AnalysePage() {
             variants={staggerContainer}
           >
             <SectionHeading
-              number="04"
+              label="Content Analyse"
+              labelColor="#a78bfa"
               title="Content Verspilling"
-              subtitle="Elk groen vierkant is een benut content stuk. De rest? Onbenut potentieel."
+              subtitle="Elk groen punt is een benut content stuk. De rest? Onbenut potentieel."
             />
 
             <motion.div variants={fadeUp} className="glass rounded-2xl p-8">
-              <div className="text-center mb-6">
-                <p className="text-sm text-taiga-text/50 mb-2">
-                  4 documentaire projecten &times; 15 beelden &times; 5 content vormen
-                  (blog, Instagram, behind the scenes, print shop, case study)
-                </p>
-                <p className="text-lg">
-                  <span className="text-taiga-primary font-semibold">300</span>{' '}
-                  <span className="text-taiga-text/40">
-                    potenti&#235;le content stukken
-                  </span>
-                  {' '}&mdash;{' '}
-                  <span className="text-taiga-danger font-semibold">
-                    slechts 30 benut (10%)
-                  </span>
-                </p>
-              </div>
-
               <DotGrid total={300} active={30} />
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 6: FINANCIAL IMPACT
@@ -910,8 +1027,9 @@ export default function AnalysePage() {
             variants={staggerContainer}
           >
             <SectionHeading
-              number="05"
-              title="Financi&#235;le Impact"
+              label="Financi\u00eble Impact"
+              labelColor="#f59e0b"
+              title="Financi\u00eble Impact"
               subtitle="Wat digitale onzichtbaarheid Tijmen daadwerkelijk kost."
             />
 
@@ -922,12 +1040,12 @@ export default function AnalysePage() {
                 color="#38bdf8"
               />
               <ImpactCard
-                value="&#8364;500-2.000"
+                value="\u20ac500-2.000"
                 label="Per gemiste opdracht (event shoot, redactioneel werk)"
                 color="#f59e0b"
               />
               <ImpactCard
-                value="&#8364;15.000-30.000"
+                value="\u20ac15.000-30.000"
                 label="Gemiste jaaromzet door digitale onzichtbaarheid"
                 color="#f87171"
               />
@@ -936,7 +1054,7 @@ export default function AnalysePage() {
         </div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 7: SOLUTIONS
@@ -950,7 +1068,8 @@ export default function AnalysePage() {
             variants={staggerContainer}
           >
             <SectionHeading
-              number="06"
+              label="Oplossing"
+              labelColor="#7dd3a8"
               title="De Oplossing"
               subtitle="Vier modules die Tijmen van onzichtbaar naar onvermijdelijk brengen."
             />
@@ -964,7 +1083,7 @@ export default function AnalysePage() {
         </div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 8: BEFORE / AFTER
@@ -978,21 +1097,27 @@ export default function AnalysePage() {
             variants={staggerContainer}
           >
             <SectionHeading
-              number="07"
-              title="Voor & Na"
+              label="Transformatie"
+              labelColor="#38bdf8"
+              title="Voor &amp; Na"
               subtitle="Het verschil na 6 maanden met AetherLink."
             />
 
             <motion.div variants={fadeUp} className="glass rounded-2xl p-8">
-              {/* Header */}
               <div className="grid grid-cols-3 gap-4 pb-3 mb-2 border-b border-taiga-border">
                 <div className="text-xs text-taiga-muted uppercase tracking-wider">
                   Metric
                 </div>
-                <div className="text-xs text-taiga-danger uppercase tracking-wider text-center">
+                <div
+                  className="text-xs uppercase tracking-wider text-center font-semibold"
+                  style={{ color: '#f87171' }}
+                >
                   Nu
                 </div>
-                <div className="text-xs text-taiga-primary uppercase tracking-wider text-center">
+                <div
+                  className="text-xs uppercase tracking-wider text-center font-semibold"
+                  style={{ color: '#7dd3a8' }}
+                >
                   Na 6 Maanden
                 </div>
               </div>
@@ -1005,7 +1130,7 @@ export default function AnalysePage() {
         </div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 9: 3-YEAR PROJECTION
@@ -1019,58 +1144,55 @@ export default function AnalysePage() {
             variants={staggerContainer}
           >
             <SectionHeading
-              number="08"
+              label="Projectie"
+              labelColor="#a78bfa"
               title="3-Jaar Projectie"
-              subtitle="Twee scenario's. Dezelfde fotograaf. Radicaal verschillende resultaten."
+              subtitle="Twee scenario\u2019s. Dezelfde fotograaf. Radicaal verschillende resultaten."
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
               {/* Scenario A */}
-              <motion.div variants={staggerItem} className="glass rounded-2xl p-6">
+              <motion.div
+                variants={staggerItem}
+                className="glass rounded-2xl p-6"
+                style={{ borderLeft: '3px solid #ef4444' }}
+              >
                 <div className="flex items-center gap-3 mb-4">
                   <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: '#f87171' }}
-                  />
-                  <h3 className="text-lg font-semibold text-taiga-danger">
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                    style={{
+                      backgroundColor: 'rgba(239,68,68,0.12)',
+                      color: '#f87171',
+                      border: '1px solid rgba(239,68,68,0.25)',
+                    }}
+                  >
+                    A
+                  </div>
+                  <h3 className="text-lg font-semibold" style={{ color: '#f87171' }}>
                     Scenario A: Niets Verandert
                   </h3>
                 </div>
-                <p className="text-xs text-taiga-text/40 mb-4">
+                <p className="text-xs mb-4" style={{ color: 'rgba(232,240,236,0.4)' }}>
                   Dalend &mdash; concurrenten met SEO winnen terrein
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-taiga-border">
-                        <th className="text-left py-2 text-taiga-muted text-xs font-normal">
-                          Metric
-                        </th>
-                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">
-                          Jaar 1
-                        </th>
-                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">
-                          Jaar 2
-                        </th>
-                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">
-                          Jaar 3
-                        </th>
+                        <th className="text-left py-2 text-taiga-muted text-xs font-normal">Metric</th>
+                        <th className="text-left py-2 text-taiga-muted text-xs font-normal pl-2">Toelichting</th>
+                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">J1</th>
+                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">J2</th>
+                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">J3</th>
                       </tr>
                     </thead>
                     <tbody>
                       {projectionData.map((row) => (
-                        <tr
-                          key={row.metric}
-                          className="border-b border-taiga-border/50"
-                        >
-                          <td className="py-2.5 text-taiga-text/60 text-xs">
-                            {row.metric}
-                          </td>
+                        <tr key={row.metric} className="border-b border-taiga-border/50">
+                          <td className="py-2.5 text-taiga-text/60 text-xs font-medium">{row.metric}</td>
+                          <td className="py-2.5 text-taiga-text/30 text-xs pl-2 hidden md:table-cell">{row.note}</td>
                           {row.a.map((val, i) => (
-                            <td
-                              key={i}
-                              className="py-2.5 text-center text-taiga-danger/80 text-xs font-medium"
-                            >
+                            <td key={i} className="py-2.5 text-center text-xs font-medium" style={{ color: 'rgba(248,113,113,0.8)' }}>
                               {val}
                             </td>
                           ))}
@@ -1085,52 +1207,44 @@ export default function AnalysePage() {
               <motion.div
                 variants={staggerItem}
                 className="glass rounded-2xl p-6"
-                style={{ borderColor: 'rgba(125,211,168,0.15)' }}
+                style={{ borderLeft: '3px solid #7dd3a8' }}
               >
                 <div className="flex items-center gap-3 mb-4">
                   <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: '#7dd3a8' }}
-                  />
-                  <h3 className="text-lg font-semibold text-taiga-primary">
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                    style={{
+                      backgroundColor: 'rgba(125,211,168,0.12)',
+                      color: '#7dd3a8',
+                      border: '1px solid rgba(125,211,168,0.25)',
+                    }}
+                  >
+                    B
+                  </div>
+                  <h3 className="text-lg font-semibold" style={{ color: '#7dd3a8' }}>
                     Scenario B: Met AetherLink
                   </h3>
                 </div>
-                <p className="text-xs text-taiga-text/40 mb-4">
+                <p className="text-xs mb-4" style={{ color: 'rgba(232,240,236,0.4)' }}>
                   Exponenti&#235;le groei dankzij SEO + AI discoverability
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-taiga-border">
-                        <th className="text-left py-2 text-taiga-muted text-xs font-normal">
-                          Metric
-                        </th>
-                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">
-                          Jaar 1
-                        </th>
-                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">
-                          Jaar 2
-                        </th>
-                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">
-                          Jaar 3
-                        </th>
+                        <th className="text-left py-2 text-taiga-muted text-xs font-normal">Metric</th>
+                        <th className="text-left py-2 text-taiga-muted text-xs font-normal pl-2">Toelichting</th>
+                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">J1</th>
+                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">J2</th>
+                        <th className="text-center py-2 text-taiga-muted text-xs font-normal">J3</th>
                       </tr>
                     </thead>
                     <tbody>
                       {projectionData.map((row) => (
-                        <tr
-                          key={row.metric}
-                          className="border-b border-taiga-border/50"
-                        >
-                          <td className="py-2.5 text-taiga-text/60 text-xs">
-                            {row.metric}
-                          </td>
+                        <tr key={row.metric} className="border-b border-taiga-border/50">
+                          <td className="py-2.5 text-taiga-text/60 text-xs font-medium">{row.metric}</td>
+                          <td className="py-2.5 text-taiga-text/30 text-xs pl-2 hidden md:table-cell">{row.note}</td>
                           {row.b.map((val, i) => (
-                            <td
-                              key={i}
-                              className="py-2.5 text-center text-taiga-primary/90 text-xs font-medium"
-                            >
+                            <td key={i} className="py-2.5 text-center text-xs font-medium" style={{ color: 'rgba(125,211,168,0.9)' }}>
                               {val}
                             </td>
                           ))}
@@ -1142,70 +1256,142 @@ export default function AnalysePage() {
               </motion.div>
             </div>
 
-            {/* Cumulative comparison */}
-            <motion.div
-              variants={fadeUp}
-              className="glass rounded-2xl p-8"
-            >
-              <h3 className="text-center text-lg font-heading text-taiga-text/80 mb-6">
-                Cumulatief Verschil over 3 Jaar
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                <div>
-                  <div className="text-xs text-taiga-muted uppercase tracking-wider mb-1">
-                    Scenario A
+            {/* Cumulatief Omzetverschil */}
+            <motion.div variants={fadeUp} className="relative rounded-2xl overflow-hidden">
+              {/* Aurora pulse background */}
+              <div
+                className="absolute inset-0 animate-aurora-pulse pointer-events-none"
+                style={{
+                  background:
+                    'radial-gradient(ellipse at 50% 50%, rgba(125,211,168,0.07) 0%, rgba(56,189,248,0.04) 40%, transparent 70%)',
+                }}
+              />
+              <div className="glass relative rounded-2xl p-8">
+                <h3
+                  className="text-center font-heading text-xl font-bold mb-8"
+                  style={{ color: '#e8f0ec' }}
+                >
+                  Cumulatief Omzetverschil over 3 Jaar
+                </h3>
+
+                {/* Side by side big numbers */}
+                <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mb-8">
+                  <div className="text-center">
+                    <div className="text-xs uppercase tracking-[0.2em] mb-2" style={{ color: '#4a6358' }}>
+                      Scenario A
+                    </div>
+                    <div
+                      className="font-heading font-bold"
+                      style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', color: '#f87171' }}
+                    >
+                      &euro;60.000
+                    </div>
                   </div>
-                  <div className="text-xl font-bold text-taiga-danger">
-                    &euro;60.000
+
+                  <div className="text-center">
+                    <div
+                      className="font-heading font-bold text-gradient-aurora"
+                      style={{ fontSize: 'clamp(2.5rem, 7vw, 4.5rem)' }}
+                    >
+                      +&euro;320.000
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: '#4a6358' }}>
+                      extra omzet met AetherLink
+                    </div>
+                  </div>
+
+                  <div className="text-center">
+                    <div className="text-xs uppercase tracking-[0.2em] mb-2" style={{ color: '#4a6358' }}>
+                      Scenario B
+                    </div>
+                    <div
+                      className="font-heading font-bold"
+                      style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', color: '#7dd3a8' }}
+                    >
+                      &euro;380.000
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-xs text-taiga-muted uppercase tracking-wider mb-1">
-                    Scenario B
+
+                {/* 3 small metric cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="glass rounded-xl p-4 text-center">
+                    <div className="text-xs uppercase tracking-wider mb-1" style={{ color: '#4a6358' }}>
+                      Investering
+                    </div>
+                    <div className="font-heading text-xl font-bold" style={{ color: '#e8f0ec' }}>
+                      &euro;28.125
+                    </div>
                   </div>
-                  <div className="text-xl font-bold text-taiga-primary">
-                    &euro;380.000
+                  <div className="glass rounded-xl p-4 text-center">
+                    <div className="text-xs uppercase tracking-wider mb-1" style={{ color: '#4a6358' }}>
+                      Extra Omzet
+                    </div>
+                    <div className="font-heading text-xl font-bold" style={{ color: '#7dd3a8' }}>
+                      &euro;320.000
+                    </div>
+                  </div>
+                  <div className="glass rounded-xl p-4 text-center">
+                    <div className="text-xs uppercase tracking-wider mb-1" style={{ color: '#4a6358' }}>
+                      ROI
+                    </div>
+                    <div className="font-heading text-xl font-bold" style={{ color: '#f59e0b' }}>
+                      127%
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-xs text-taiga-muted uppercase tracking-wider mb-1">
-                    Verschil
-                  </div>
-                  <div className="text-xl font-bold gradient-text">
-                    +&euro;320.000
-                  </div>
+
+                <div className="text-center mt-6 pt-4 border-t border-taiga-border">
+                  <p className="text-sm text-taiga-text/40">
+                    AetherLink investering:{' '}
+                    <span className="font-semibold text-taiga-text/60">
+                      &euro;28.125
+                    </span>{' '}
+                    &mdash; terugverdiend in{' '}
+                    <span className="font-semibold" style={{ color: '#7dd3a8' }}>
+                      8 maanden
+                    </span>
+                  </p>
                 </div>
-                <div>
-                  <div className="text-xs text-taiga-muted uppercase tracking-wider mb-1">
-                    ROI Jaar 1
-                  </div>
-                  <div className="text-xl font-bold text-taiga-warm">127%</div>
-                </div>
-              </div>
-              <div className="text-center mt-6 pt-4 border-t border-taiga-border">
-                <p className="text-sm text-taiga-text/40">
-                  AetherLink investering:{' '}
-                  <span className="text-taiga-text/60 font-semibold">
-                    &euro;28.125
-                  </span>{' '}
-                  &mdash; terugverdiend in{' '}
-                  <span className="text-taiga-primary font-semibold">
-                    8 maanden
-                  </span>
-                </p>
               </div>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      <div className="section-divider" />
+      <div className="section-divider mx-auto w-2/3" />
 
       {/* ═══════════════════════════════════════
           SECTION 10: CTA
           ═══════════════════════════════════════ */}
-      <section className="py-32 px-6">
-        <div className="max-w-3xl mx-auto text-center">
+      <section className="py-32 px-6 relative overflow-hidden">
+        {/* Ambient glow circles */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            top: '10%',
+            left: '-15%',
+            width: '45%',
+            height: '45%',
+            borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(125,211,168,0.08) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+          }}
+        />
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            bottom: '10%',
+            right: '-15%',
+            width: '40%',
+            height: '40%',
+            borderRadius: '50%',
+            background: 'radial-gradient(ellipse, rgba(167,139,250,0.07) 0%, transparent 70%)',
+            filter: 'blur(60px)',
+          }}
+        />
+
+        <div className="max-w-3xl mx-auto text-center relative">
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -1214,23 +1400,25 @@ export default function AnalysePage() {
           >
             <motion.div
               variants={fadeIn}
-              className="text-xs tracking-[0.3em] text-taiga-muted uppercase mb-6 font-medium"
+              className="text-xs font-semibold uppercase mb-6"
+              style={{ letterSpacing: '0.3em', color: '#4a6358' }}
             >
               Volgende stap
             </motion.div>
 
             <motion.h2
               variants={fadeUp}
-              className="text-4xl md:text-5xl lg:text-6xl font-heading font-light mb-6"
+              className="font-heading font-bold mb-6"
+              style={{ fontSize: 'clamp(2.5rem, 7vw, 5.5rem)', lineHeight: 1.1 }}
             >
-              <span className="gradient-text">
-                Klaar om gezien te worden?
-              </span>
+              <span style={{ color: '#e8f0ec' }}>Klaar om te </span>
+              <span className="text-gradient-aurora">groeien?</span>
             </motion.h2>
 
             <motion.p
               variants={fadeUp}
-              className="text-lg text-taiga-text/50 max-w-xl mx-auto mb-12 leading-relaxed"
+              className="text-lg max-w-xl mx-auto mb-12 leading-relaxed"
+              style={{ color: 'rgba(232,240,236,0.5)' }}
             >
               Jouw foto&rsquo;s vertellen al verhalen die de wereld moet zien.
               Laten we ervoor zorgen dat de wereld ze ook vindt.
@@ -1247,8 +1435,7 @@ export default function AnalysePage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-sm transition-all duration-300 hover:scale-105"
                 style={{
-                  background:
-                    'linear-gradient(135deg, #7dd3a8 0%, #38bdf8 100%)',
+                  background: 'linear-gradient(135deg, #7dd3a8 0%, #38bdf8 100%)',
                   color: '#0b1410',
                 }}
               >
@@ -1259,7 +1446,8 @@ export default function AnalysePage() {
               <motion.a
                 variants={staggerItem}
                 href="mailto:info@aetherlink.ai"
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-sm glass glass-hover transition-all duration-300 hover:scale-105 text-taiga-text/80"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-sm glass glass-hover transition-all duration-300 hover:scale-105"
+                style={{ color: 'rgba(232,240,236,0.8)' }}
               >
                 info@aetherlink.ai
               </motion.a>
@@ -1267,10 +1455,11 @@ export default function AnalysePage() {
 
             <motion.div
               variants={fadeIn}
-              className="mt-20 text-xs text-taiga-muted"
+              className="mt-20 text-xs"
+              style={{ color: '#4a6358' }}
             >
               <p>AetherLink B.V. &mdash; Maart 2026</p>
-              <p className="mt-1 text-taiga-muted/50">
+              <p className="mt-1" style={{ color: 'rgba(74,99,88,0.5)' }}>
                 Deze analyse is vertrouwelijk opgesteld voor Tijmen Berens
               </p>
             </motion.div>

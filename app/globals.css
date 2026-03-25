@@ -83,6 +83,13 @@ body {
   background-clip: text;
 }
 
+.text-gradient-aurora {
+  background: linear-gradient(135deg, #7dd3a8 0%, #38bdf8 40%, #a78bfa 80%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* Section divider */
 .section-divider {
   height: 1px;
@@ -118,6 +125,10 @@ body {
   animation: scrollDown 2s ease-in-out infinite;
 }
 
+.animate-scroll-down {
+  animation: scrollDown 2s ease-in-out infinite;
+}
+
 /* Aurora pulse */
 @keyframes auroraPulse {
   0%, 100% {
@@ -131,6 +142,10 @@ body {
 }
 
 .aurora-pulse {
+  animation: auroraPulse 8s ease-in-out infinite;
+}
+
+.animate-aurora-pulse {
   animation: auroraPulse 8s ease-in-out infinite;
 }
 
